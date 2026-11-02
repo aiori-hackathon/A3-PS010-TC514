@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Secrets and local data: never commit
+.env
+data/
+*.sqlite3
+*.db
+
+# Editors / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local outputs of the inspection/test commands
+inspection-report.json
+test-results.txt
+*.egg-info/
+
+# Streamlit local secrets (never commit)
+.streamlit/secrets.toml
+
+# Stage 7: local evaluation outputs (release-evidence reports live in evaluation/reports/ and ARE committed)
+evaluation/output/
+evaluation/output-live/

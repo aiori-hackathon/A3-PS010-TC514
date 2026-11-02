@@ -1,0 +1,892 @@
+{
+  "schema_version": "ps010-eval-dataset-1",
+  "dataset_id": "ps010-eval-v1",
+  "dataset_version": "1.0.0",
+  "description": "Version 1 evaluation dataset for the PS-010 IP classification pipeline. It is SYNTHETIC ONLY: every case runs the real classification service over fixture evidence described in this file, and every expected label follows from the documented policy. It contains no independently sourced reference cases, so it supports policy-conformance checks and nothing else.",
+  "evaluation_time": "2026-10-28T12:00:00+00:00",
+  "limitations": [
+    "Synthetic only: no independently sourced, timestamped reference cases are included; no real-world accuracy, precision or recall can be derived from this dataset.",
+    "All IP addresses are arbitrary global (or deliberately excluded) addresses chosen for fixtures. None is a claim about a real Tor exit, VPN endpoint or any real host.",
+    "All three evaluated sources are current-only snapshots, so no source-backed historical ground truth exists; historical cases can only expect Unknown (stale evidence).",
+    "Fixture sanity floors are lowered to 1 entry so small lists load; the real floors are covered by the adapter tests.",
+    "UNKNOWN_HOSTING_ONLY is not reachable through the service (RIPEstat context never sets a hosting indicator) and is therefore not exercised here."
+  ],
+  "worlds": {
+    "healthy": {
+      "description": "All three sources healthy. Tor list and az0 files hold IPv4 only (no IPv6 coverage); the X4BNet-style list has IPv4 and IPv6 ranges and a separate Apple Private Relay exclusion list. Some excluded-by-policy addresses are deliberately listed in the fixtures.",
+      "tor": {
+        "state": "ok",
+        "entries": [
+          "11.10.10.1",
+          "11.10.10.5",
+          "12.20.30.99",
+          "10.1.2.3"
+        ]
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "tor-unavailable": {
+      "description": "Tor list answers HTTP 503; VPN sources healthy.",
+      "tor": {
+        "state": "http_error"
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "tor-timeout": {
+      "description": "Tor list times out; VPN sources healthy.",
+      "tor": {
+        "state": "timeout"
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "tor-malformed": {
+      "description": "Tor endpoint returns an HTML page instead of a list; VPN sources healthy.",
+      "tor": {
+        "state": "malformed"
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "tor-empty": {
+      "description": "Tor endpoint returns a file with comments only; VPN sources healthy.",
+      "tor": {
+        "state": "empty"
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "tor-stale-source": {
+      "description": "Tor endpoint reports Last-Modified three days before retrieval (limit: 86400 s); VPN sources healthy.",
+      "tor": {
+        "state": "ok",
+        "entries": [
+          "11.10.10.1",
+          "11.10.10.5"
+        ],
+        "last_modified": "2026-10-25T12:00:00+00:00"
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "vpn-unavailable": {
+      "description": "Both VPN sources answer HTTP 503; Tor list healthy.",
+      "tor": {
+        "state": "ok",
+        "entries": [
+          "11.10.10.1",
+          "11.10.10.5",
+          "12.20.30.99",
+          "10.1.2.3"
+        ]
+      },
+      "x4bnet": {
+        "state": "http_error",
+        "apple_state": "ok",
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "http_error"
+      }
+    },
+    "all-unavailable": {
+      "description": "Every source answers HTTP 503.",
+      "tor": {
+        "state": "http_error"
+      },
+      "x4bnet": {
+        "state": "http_error",
+        "apple_state": "http_error"
+      },
+      "az0": {
+        "state": "http_error"
+      }
+    },
+    "apple-list-unavailable": {
+      "description": "X4BNet ranges load but the Apple Private Relay exclusion list answers HTTP 503.",
+      "tor": {
+        "state": "ok",
+        "entries": [
+          "11.10.10.1",
+          "11.10.10.5",
+          "12.20.30.99",
+          "10.1.2.3"
+        ]
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "http_error",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    },
+    "tor-only": {
+      "description": "Only the Tor source is enabled; no VPN/proxy provider is configured.",
+      "enabled_sources": [
+        "tor-project-bulk-exit-list"
+      ],
+      "tor": {
+        "state": "ok",
+        "entries": [
+          "11.10.10.1",
+          "11.10.10.5",
+          "12.20.30.99",
+          "10.1.2.3"
+        ]
+      }
+    },
+    "ipv6-covered": {
+      "description": "As 'healthy' but the Tor list also contains IPv6 exit addresses.",
+      "tor": {
+        "state": "ok",
+        "entries": [
+          "11.10.10.1",
+          "2a0e:3000::1"
+        ]
+      },
+      "x4bnet": {
+        "state": "ok",
+        "apple_state": "ok",
+        "ipv4": [
+          "12.20.30.0/24",
+          "15.50.60.0/26",
+          "100.64.0.0/10"
+        ],
+        "ipv6": [
+          "2a0e:1000::/32"
+        ],
+        "apple": [
+          "15.50.60.0/26"
+        ]
+      },
+      "az0": {
+        "state": "ok",
+        "files": {
+          "expressvpn.txt": [
+            "13.30.41.1"
+          ],
+          "hideme.txt": [
+            "13.30.42.1"
+          ],
+          "hideme_api.txt": [
+            "13.30.43.1"
+          ],
+          "nordvpn_api.txt": [
+            "13.30.44.1"
+          ],
+          "pia.txt": [
+            "13.30.40.50",
+            "11.10.10.5",
+            "12.20.30.20"
+          ]
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "syn-tor-001",
+      "tier": "synthetic",
+      "category": "known_tor_exit",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known Tor exit",
+      "rationale": "Listed only in the fixture Tor list; both VPN sources checked and do not list it; observation at retrieval time.",
+      "expected_reason_code": "TOR_EXIT_MATCH"
+    },
+    {
+      "case_id": "syn-tor-002-ipv4-mapped",
+      "tier": "synthetic",
+      "category": "known_tor_exit",
+      "ip": "::ffff:11.10.10.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known Tor exit",
+      "rationale": "An IPv4-mapped IPv6 literal is normalised to 11.10.10.1 before any lookup.",
+      "expected_reason_code": "TOR_EXIT_MATCH"
+    },
+    {
+      "case_id": "syn-tor-003-boundary-within",
+      "tier": "synthetic",
+      "category": "known_tor_exit",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T11:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known Tor exit",
+      "rationale": "Observation exactly 3600 s before retrieval: a current-only snapshot still applies at the tolerance limit.",
+      "expected_reason_code": "TOR_EXIT_MATCH"
+    },
+    {
+      "case_id": "syn-vpn-001-x4bnet",
+      "tier": "synthetic",
+      "category": "known_vpn_proxy",
+      "ip": "12.20.30.10",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known hosted VPN/proxy endpoint",
+      "rationale": "Inside the fixture X4BNet-style range 12.20.30.0/24, which is not an Apple Private Relay range; Tor checked and absent.",
+      "expected_reason_code": "VPN_PROXY_ENDPOINT_MATCH"
+    },
+    {
+      "case_id": "syn-vpn-002-az0",
+      "tier": "synthetic",
+      "category": "known_vpn_proxy",
+      "ip": "13.30.40.50",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known hosted VPN/proxy endpoint",
+      "rationale": "Listed exactly in the fixture az0-style file pia.txt only.",
+      "expected_reason_code": "VPN_PROXY_ENDPOINT_MATCH"
+    },
+    {
+      "case_id": "syn-vpn-003-both-vpn-sources",
+      "tier": "synthetic",
+      "category": "known_vpn_proxy",
+      "ip": "12.20.30.20",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known hosted VPN/proxy endpoint",
+      "rationale": "Matched by both VPN-kind sources: still one kind, so one label.",
+      "expected_reason_code": "VPN_PROXY_ENDPOINT_MATCH"
+    },
+    {
+      "case_id": "syn-vpn-004-ipv6",
+      "tier": "synthetic",
+      "category": "ipv6_coverage",
+      "ip": "2a0e:1000::1234",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Known hosted VPN/proxy endpoint",
+      "rationale": "Inside the fixture IPv6 range. Tor has no IPv6 coverage in this world, but a single unambiguous positive match is still reported (existing rule order: matches are decided before coverage gaps). The Apple exclusion list holds no IPv6 CIDRs, which the adapter records as a limitation.",
+      "expected_reason_code": "VPN_PROXY_ENDPOINT_MATCH"
+    },
+    {
+      "case_id": "syn-conflict-001-tor-x4bnet",
+      "tier": "synthetic",
+      "category": "conflicting_evidence",
+      "ip": "12.20.30.99",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Listed as a Tor exit AND inside a VPN range: policy never chooses between conflicting claims.",
+      "expected_reason_code": "UNKNOWN_CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "syn-conflict-002-tor-az0",
+      "tier": "synthetic",
+      "category": "conflicting_evidence",
+      "ip": "11.10.10.5",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Listed in the Tor list and in az0-style pia.txt.",
+      "expected_reason_code": "UNKNOWN_CONFLICTING_EVIDENCE"
+    },
+    {
+      "case_id": "syn-nomatch-001",
+      "tier": "synthetic",
+      "category": "no_match",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Not listed anywhere; Tor and VPN kinds both covered by applicable negative answers. 'Unknown' is not a claim that the address is clean.",
+      "expected_reason_code": "UNKNOWN_NO_QUALIFYING_MATCH"
+    },
+    {
+      "case_id": "syn-apple-001-relay-range",
+      "tier": "synthetic",
+      "category": "apple_private_relay",
+      "ip": "15.50.60.10",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Inside an X4BNet-style range that is also on the Apple Private Relay exclusion list: exclusion data, not VPN evidence.",
+      "expected_reason_code": "UNKNOWN_NO_QUALIFYING_MATCH"
+    },
+    {
+      "case_id": "syn-ipv6-001-uncovered",
+      "tier": "synthetic",
+      "category": "ipv6_coverage",
+      "ip": "2a0e:2000::1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "IPv6 address in no list; the Tor list holds no IPv6 entries so its silence proves nothing (NOT_CONFIGURED, never a negative).",
+      "expected_reason_code": "UNKNOWN_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "case_id": "syn-historical-001-tor-listed",
+      "tier": "synthetic",
+      "category": "stale_or_historical",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-27T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Listed today, but a current-only snapshot cannot establish status 24 h earlier.",
+      "expected_reason_code": "UNKNOWN_STALE_EVIDENCE"
+    },
+    {
+      "case_id": "syn-historical-002-vpn-listed",
+      "tier": "synthetic",
+      "category": "stale_or_historical",
+      "ip": "12.20.30.10",
+      "observed_at": "2026-10-27T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Same for a VPN-range address observed 24 h before retrieval.",
+      "expected_reason_code": "UNKNOWN_STALE_EVIDENCE"
+    },
+    {
+      "case_id": "syn-historical-003-unlisted",
+      "tier": "synthetic",
+      "category": "stale_or_historical",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-27T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Absence today says nothing about the past either.",
+      "expected_reason_code": "UNKNOWN_STALE_EVIDENCE"
+    },
+    {
+      "case_id": "syn-historical-004-future",
+      "tier": "synthetic",
+      "category": "stale_or_historical",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T14:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "An observation 2 h after retrieval is outside the tolerance in the other direction.",
+      "expected_reason_code": "UNKNOWN_STALE_EVIDENCE"
+    },
+    {
+      "case_id": "syn-historical-005-boundary-beyond",
+      "tier": "synthetic",
+      "category": "stale_or_historical",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T10:59:59+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "One second beyond the 3600 s tolerance flips the same Tor-listed address to stale.",
+      "expected_reason_code": "UNKNOWN_STALE_EVIDENCE"
+    },
+    {
+      "case_id": "syn-excluded-001-private-listed",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "10.1.2.3",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "RFC 1918 address deliberately present in the fixture Tor list: still never looked up. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-002-cgnat-listed",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "100.64.1.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Shared address space (RFC 6598) inside a listed fixture range: excluded. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-003-loopback",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "127.0.0.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Loopback. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-004-link-local",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "169.254.1.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Link-local. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-005-multicast",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "224.0.0.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Multicast. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-006-documentation",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "192.0.2.10",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "Documentation range (RFC 5737); non-global. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-007-ula-v6",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "fc00::1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "IPv6 unique local address. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-excluded-008-mapped-private",
+      "tier": "synthetic",
+      "category": "excluded_address",
+      "ip": "::ffff:10.0.0.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": "Unknown",
+      "rationale": "IPv4-mapped IPv6 form of a private address is normalised, then excluded. Expected: zero evidence fetches.",
+      "expected_reason_code": "UNKNOWN_EXCLUDED_ADDRESS"
+    },
+    {
+      "case_id": "syn-unlabeled-001",
+      "tier": "synthetic",
+      "category": "unlabeled",
+      "ip": "14.40.50.61",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "healthy",
+      "expected_label": null,
+      "unlabeled_reason": "Deliberately carries no reference label to exercise unlabeled handling: it is reported but never scored as correct or incorrect.",
+      "rationale": "Exercises the unlabeled path; any prediction is acceptable and none is scored."
+    },
+    {
+      "case_id": "syn-unavail-001-tor-down-unlisted",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-unavailable",
+      "expected_label": "Unknown",
+      "rationale": "Tor source failed, so the absence of a Tor match cannot be established.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-002-tor-down-listed",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-unavailable",
+      "expected_label": "Unknown",
+      "rationale": "The address is on the real list, but the list could not be retrieved: no evidence, no label.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-003-tor-down-vpn-listed",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "13.30.40.50",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-unavailable",
+      "expected_label": "Known hosted VPN/proxy endpoint",
+      "rationale": "A positive VPN match stands even when the Tor source is down (existing rule: one unambiguous matched kind).",
+      "expected_reason_code": "VPN_PROXY_ENDPOINT_MATCH"
+    },
+    {
+      "case_id": "syn-unavail-004-conflict-masked",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "11.10.10.5",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-unavailable",
+      "expected_label": "Known hosted VPN/proxy endpoint",
+      "rationale": "DOCUMENTED LIMITATION, not an endorsement: this address is both Tor- and VPN-listed in the healthy world, but with the Tor list unavailable the conflict cannot be seen and the single VPN match is reported.",
+      "expected_reason_code": "VPN_PROXY_ENDPOINT_MATCH"
+    },
+    {
+      "case_id": "syn-unavail-005-tor-timeout",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-timeout",
+      "expected_label": "Unknown",
+      "rationale": "Timeout is unavailability, never a negative.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-006-tor-malformed",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-malformed",
+      "expected_label": "Unknown",
+      "rationale": "An HTML error page must never be read as an empty list.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-007-tor-empty",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-empty",
+      "expected_label": "Unknown",
+      "rationale": "A comments-only file is rejected, not read as 'no exits'.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-008-tor-stale-source",
+      "tier": "synthetic",
+      "category": "stale_or_historical",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-stale-source",
+      "expected_label": "Unknown",
+      "rationale": "The source's own Last-Modified is older than the configured maximum age, so the snapshot is rejected as evidence.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-009-vpn-down-unlisted",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "vpn-unavailable",
+      "expected_label": "Unknown",
+      "rationale": "Both VPN-kind sources failed: no VPN negative can be established.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-010-vpn-down-tor-listed",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "vpn-unavailable",
+      "expected_label": "Known Tor exit",
+      "rationale": "A positive Tor match stands when VPN sources are down.",
+      "expected_reason_code": "TOR_EXIT_MATCH"
+    },
+    {
+      "case_id": "syn-unavail-011-all-down",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "all-unavailable",
+      "expected_label": "Unknown",
+      "rationale": "No source answered.",
+      "expected_reason_code": "UNKNOWN_SOURCE_UNAVAILABLE"
+    },
+    {
+      "case_id": "syn-unavail-012-apple-list-down",
+      "tier": "synthetic",
+      "category": "source_unavailable",
+      "ip": "12.20.30.10",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "apple-list-unavailable",
+      "expected_label": "Unknown",
+      "rationale": "OBSERVATION: X4BNet cannot verify the match without the Apple exclusion list and reports unavailable, but the az0-style negative still covers the VPN kind, so the label is Unknown with the broad 'no qualifying match' reason code (the unavailable source is visible only as a caveat). Label is conservative; the reason code is less specific than it could be.",
+      "expected_reason_code": "UNKNOWN_NO_QUALIFYING_MATCH"
+    },
+    {
+      "case_id": "syn-notconf-001-no-vpn-provider",
+      "tier": "synthetic",
+      "category": "source_not_configured",
+      "ip": "14.40.50.60",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-only",
+      "expected_label": "Unknown",
+      "rationale": "No VPN/proxy source is enabled, so that kind cannot be checked.",
+      "expected_reason_code": "UNKNOWN_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "case_id": "syn-notconf-002-tor-listed-no-vpn-provider",
+      "tier": "synthetic",
+      "category": "source_not_configured",
+      "ip": "11.10.10.1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "tor-only",
+      "expected_label": "Known Tor exit",
+      "rationale": "A Tor match stands even though the VPN kind is not configured.",
+      "expected_reason_code": "TOR_EXIT_MATCH"
+    },
+    {
+      "case_id": "syn-ipv6-002-tor-v6-exit",
+      "tier": "synthetic",
+      "category": "ipv6_coverage",
+      "ip": "2a0e:3000::1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "ipv6-covered",
+      "expected_label": "Known Tor exit",
+      "rationale": "IPv6 exit address in a Tor list that has IPv6 coverage.",
+      "expected_reason_code": "TOR_EXIT_MATCH"
+    },
+    {
+      "case_id": "syn-ipv6-003-covered-unlisted",
+      "tier": "synthetic",
+      "category": "ipv6_coverage",
+      "ip": "2a0e:2000::1",
+      "observed_at": "2026-10-28T12:00:00+00:00",
+      "world": "ipv6-covered",
+      "expected_label": "Unknown",
+      "rationale": "With IPv6 coverage in the Tor list and an applicable VPN negative, an unlisted IPv6 address gets the ordinary no-match Unknown.",
+      "expected_reason_code": "UNKNOWN_NO_QUALIFYING_MATCH"
+    }
+  ]
+}
