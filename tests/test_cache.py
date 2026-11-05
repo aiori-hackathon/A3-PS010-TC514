@@ -1,5 +1,6 @@
 import json
 import re
+import pytest
 from datetime import timedelta
 
 from factories import T0
@@ -113,3 +114,96 @@ def test_no_temporary_files_are_left_behind(tmp_path):
     store = SnapshotStore(tmp_path)
     store.save(make_snapshot())
     assert not list(tmp_path.rglob(".tmp-*"))
+
+
+def test_save_repairs_corrupt_snapshot_body(tmp_path):
+    store = SnapshotStore(tmp_path)
+    snap = make_snapshot()
+    store.save(snap)
+
+    body_path = tmp_path / "snapshots" / f"{snap.sha256}.bin"
+    body_path.write_bytes(b"corrupted data")
+
+    store.save(snap)
+
+    lookup = store.load("src", URL)
+    assert lookup.snapshot is not None
+    assert lookup.snapshot.body == snap.body
+    assert lookup.snapshot.sha256 == sha256_hex(snap.body)
+
+
+def test_save_reuses_valid_snapshot_body(tmp_path, monkeypatch):
+    import netclass.cache as cache_module
+
+    store = SnapshotStore(tmp_path)
+    snap = make_snapshot()
+    store.save(snap)
+
+    original_write = cache_module._atomic_write
+
+    def reject_body_rewrite(path, data):
+        if path.parent.name == "snapshots":
+            raise AssertionError("Valid snapshot body should be reused")
+        original_write(path, data)
+
+    monkeypatch.setattr(cache_module, "_atomic_write", reject_body_rewrite)
+
+    store.save(snap)
+
+
+def test_failed_body_repair_does_not_update_index(tmp_path, monkeypatch):
+    import netclass.cache as cache_module
+
+    store = SnapshotStore(tmp_path)
+    old = make_snapshot()
+    store.save(old)
+
+    index_path = store._index_path("src", URL)
+    original_index = index_path.read_bytes()
+
+    new = make_snapshot(
+        body=b"2.2.2.2\n",
+        retrieved_at=T0 + timedelta(hours=1),
+    )
+    body_path = tmp_path / "snapshots" / f"{new.sha256}.bin"
+    body_path.parent.mkdir(parents=True, exist_ok=True)
+    body_path.write_bytes(b"corrupted data")
+
+    original_write = cache_module._atomic_write
+
+    def fail_body_repair(path, data):
+        if path == body_path:
+            raise OSError("simulated repair failure")
+        original_write(path, data)
+
+    monkeypatch.setattr(cache_module, "_atomic_write", fail_body_repair)
+
+    with pytest.raises(OSError, match="simulated repair failure"):
+        store.save(new)
+
+
+    assert index_path.read_bytes() == original_index
+
+
+def test_post_write_verification_rejects_corrupt_body(
+    tmp_path, monkeypatch
+):
+    import netclass.cache as cache_module
+
+    store = SnapshotStore(tmp_path)
+    snap = make_snapshot()
+
+    original_write = cache_module._atomic_write
+
+    def write_corrupt_body(path, data):
+        if path.parent.name == "snapshots":
+            original_write(path, b"corrupted data")
+        else:
+            original_write(path, data)
+
+    monkeypatch.setattr(cache_module, "_atomic_write", write_corrupt_body)
+
+    with pytest.raises(OSError, match="SHA-256 verification"):
+        store.save(snap)
+
+    assert not list((tmp_path / "index").glob("*.json"))

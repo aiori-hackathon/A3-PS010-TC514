@@ -95,8 +95,27 @@ class SnapshotStore:
 
     def save(self, snapshot: Snapshot) -> None:
         body_path = self._body_path(snapshot.sha256)
+        if not verify_sha256(snapshot.body, snapshot.sha256):
+            raise ValueError("snapshot body does not match its SHA-256")
         if not body_path.exists():
             _atomic_write(body_path, snapshot.body)
+        else:
+            try:
+                existing_body = body_path.read_bytes()
+            except OSError:
+                existing_body = None
+
+            if existing_body is None or not verify_sha256(
+                existing_body, snapshot.sha256
+            ):
+                _atomic_write(body_path, snapshot.body)
+
+        # Verify the stored body before updating the cache index.
+        stored_body = body_path.read_bytes()
+        if not verify_sha256(stored_body, snapshot.sha256):
+            raise OSError(
+                "snapshot body failed SHA-256 verification after write"
+            )
         index = {
             "version": _INDEX_VERSION,
             "source_name": snapshot.source_name,
