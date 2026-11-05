@@ -1,9 +1,9 @@
-# Stage 6 verification report (corrected package)
+# Dashboard verification report
 
 Read this before trusting the release. It separates what was run from what was only written, and
 who ran it.
 
-## A. Results reported by the project owner (Windows, Python 3.12.10) on the FIRST Stage 6 package
+## A. Results reported by the project owner (Windows, Python 3.12.10) on the first dashboard package
 Not executed by the author of this fix; recorded as reported.
 * Manual: dashboard launches and renders; classification and evidence display; audit history;
   Status tab; invalid-IP validation; opt-in audit recording. All passed.
@@ -36,7 +36,7 @@ but still passing).
 * The two smoke tests in `tests/test_dashboard_app_smoke.py` with the new `allow_loopback` marker:
   whether Streamlit's AppTest then passes on your machine is **unverified**. If it still fails,
   the failure will be a different one from the socket-pair error; report its text.
-* `tests/test_dashboard_logic.py` and all Stage 1-5 tests: unchanged by this fix, not run here
+* `tests/test_dashboard_logic.py` and all earlier tests: unchanged by this fix, not run here
   (your run above is the only evidence for them).
 
 ## E. What to run (Windows PowerShell)
@@ -51,4 +51,4 @@ newly passing + the 14 added tests (9 boundary, 5 network-guard) = about 1,045 p
 ## F. Known limitations
 * Item D's smoke-test outcome is unverified until you run it.
 * The loopback allowance is test-only and does not touch application code.
-* Everything in `docs/STAGE6_CHANGELOG.md` under "Design decisions" still applies.
+* Everything in `docs/RELEASE_NOTES.md` under "Local dashboard" design decisions still applies.

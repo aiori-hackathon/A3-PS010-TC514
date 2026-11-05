@@ -103,5 +103,5 @@ python -m pytest tests\test_workstream_a_audit.py -v
 python scripts\inspect_sources.py --json inspection-report.json   # live, needs internet
 ```
 
-Expected at the time of Stage 3A: 286 passed (269 + 17). Superseded: the full integrated suite now also
-contains the Stage 3B RIPEstat tests; use the count your own run reports (see `docs/STAGE3C_AUDIT.md`).
+Expected at the time of this audit: 286 passed (269 + 17). Superseded: the full integrated suite now also
+contains the RIPEstat tests; use the count your own run reports (see `docs/INTEGRATION_AUDIT.md`).

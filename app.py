@@ -1,4 +1,4 @@
-"""Streamlit entry point for the PS-010 dashboard (Stage 6).
+"""Streamlit entry point for the PS-010 dashboard.
 
 Run from the project root:
     python -m streamlit run app.py

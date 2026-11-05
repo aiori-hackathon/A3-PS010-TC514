@@ -22,7 +22,7 @@ def _notice(level: str, text: str) -> None:
 def _header(settings, diag: logic.Diagnostics) -> None:
     st.title(PROJECT_NAME)
     st.caption(
-        f"Stage 6 · package {diag.app_version} · policy {diag.policy_version} · "
+        f"Dashboard · package {diag.app_version} · policy {diag.policy_version} · "
         f"service {diag.service_version} · runs locally"
     )
     st.info(logic.DISCLAIMER)

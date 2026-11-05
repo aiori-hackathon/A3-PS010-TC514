@@ -1,4 +1,4 @@
-"""Mocked IPinfo Lite response builders shared by the Stage 4 tests.
+"""Mocked IPinfo Lite response builders shared by the IPinfo tests.
 
 Bodies follow the Lite response documented at https://ipinfo.io/developers/lite-api
 (ip, asn, as_name, as_domain, country_code, country, continent_code, continent).

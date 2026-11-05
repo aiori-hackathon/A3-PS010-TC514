@@ -1,4 +1,4 @@
-"""Stage 5 test helpers that need no pydantic.
+"""Audit test helpers that need no pydantic.
 
 ``fake_result`` builds an object shaped like ``netclass.service.ServiceResult``: it exposes
 ``classification``, ``evidence``, ``ripestat_context``, ``ipinfo_metadata`` and

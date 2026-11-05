@@ -45,7 +45,7 @@ def test_invalid_ripestat_ttl_is_rejected(value):
         load_settings(env={"NETCLASS_RIPESTAT_CACHE_TTL_SECONDS": value})
 
 
-def test_stage_3a_settings_are_unchanged():
+def test_cache_and_download_settings_are_unchanged():
     s = Settings()
     assert s.cache_ttl_seconds == 1800 and s.current_evidence_tolerance_seconds == 3600
     assert s.max_source_age_seconds == 86400 and s.max_download_bytes == 20_000_000

@@ -1,4 +1,4 @@
-"""Service layer (Stage 4): one stable entry point for callers.
+"""Service layer: one stable entry point for callers.
 
     from netclass.service import ClassificationService
     service = ClassificationService.from_settings(load_settings())
@@ -8,8 +8,8 @@
 WHAT IT DOES
     1. Classifies with the existing evidence pipeline (``collector`` +
        ``classifier``). No classification rule lives in this module.
-    2. Optionally attaches RIPEstat context (Stage 3B behaviour, unchanged).
-    3. Optionally attaches IPinfo supplementary metadata (Stage 4).
+    2. Optionally attaches RIPEstat network context.
+    3. Optionally attaches IPinfo supplementary metadata.
 
 GUARANTEES (pinned by tests/test_service_layer.py)
     * ``outcome.classification`` is computed BEFORE, and without any input from,
@@ -21,7 +21,7 @@ GUARANTEES (pinned by tests/test_service_layer.py)
     * Nothing is sent to IPinfo unless the caller passes ``include_ipinfo=True`` AND a
       usable token is configured. Excluded addresses are never sent.
 
-AUDIT HISTORY (Stage 5, opt-in)
+AUDIT HISTORY (opt-in)
     * ``classify()`` is unchanged and NEVER writes anything, whether or not an audit store
       is configured. ``ServiceResult`` is unchanged.
     * ``classify_and_record()`` classifies exactly as ``classify()`` does, then tries to save

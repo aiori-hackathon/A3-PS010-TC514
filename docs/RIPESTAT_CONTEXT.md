@@ -1,4 +1,4 @@
-# RIPEstat network-context service (Stage 3B)
+# RIPEstat network-context service
 
 Module: `src/netclass/ripestat.py`. Wiring: `collector.build_context_service`,
 `collector.classify_with_context`. CLI: `scripts\ripestat_context.py`,
@@ -10,7 +10,7 @@ RIPEstat output is **contextual metadata only**. It is never an `EvidenceRecord`
 produces a label or reason code, and never sets `NetworkContext.hosting_indicator`.
 An ASN, a holder name that sounds like hosting/cloud/VPN, or a data-centre prefix does not
 show VPN/proxy or Tor use. The three primary labels are unchanged and come from the
-Stage 2/3A evidence sources only. This is enforced by tests, including an AST check that
+evidence sources only. This is enforced by tests, including an AST check that
 `ripestat.py` does not import or name the classifier, `Label`, `ReasonCode` or the evidence types.
 
 ## 2. Official documentation and exact endpoints
@@ -108,7 +108,7 @@ retrieval time among the sections used. `country_code` is never set (not request
 ## 4. Caching and freshness
 
 * In-memory only; nothing is written to disk, so queried addresses are not persisted.
-  (Deliberately not the Stage 2 `SnapshotStore`: that stores per-URL files, which would create one
+  (Deliberately not the evidence `SnapshotStore`: that stores per-URL files, which would create one
   file per queried IP.)
 * Key: (data call, resource). Only responses that parsed successfully are stored. Errors and
   malformed bodies are never cached. Valid empty answers (unrouted address) are cached.
@@ -116,7 +116,7 @@ retrieval time among the sections used. `country_code` is never set (not request
   dumps, so a one-hour reuse adds little staleness). `0` disables caching in code.
 * An entry is served while `0 <= age <= TTL`. Older entries, or entries whose age is negative
   (clock moved backwards), are dropped and never served, even if the refresh then fails; the
-  result is then `UNAVAILABLE`, mirroring the Stage 2 rule that stale data is not used as evidence.
+  result is then `UNAVAILABLE`, mirroring the evidence-source rule that stale data is not used as evidence.
 * A cache hit keeps the original `retrieved_at` and sets `from_cache=True`.
 * Bounded to 2048 entries (oldest inserted evicted first). Holder answers are shared across
   addresses of the same ASN.
@@ -134,7 +134,7 @@ retrieval time among the sections used. `country_code` is never set (not request
   not proof the address is unallocated.
 * The holder is the ASN holder's registered free-text name, not the address's user.
 * `HolderSection.announced` is RIPEstat's own flag: true only if the ASN originates prefixes visible to at least 10 RIS full-feed peers. RIPEstat's page states that a transit-only ASN is reported as `false` and that the field name may change in a future version. Do not read `announced=False` as "not routed".
-* Documentation re-checked in Stage 3C on 2026-10-31: network-info 1.1 (current); as-overview 1.3 (current, 2.1 also listed). The service sends no `version` parameter, so it receives the default version; the envelope `version` is stored in `Provenance.api_version`.
+* Documentation re-checked on 2026-10-31 (see `docs/INTEGRATION_AUDIT.md`): network-info 1.1 (current); as-overview 1.3 (current, 2.1 also listed). The service sends no `version` parameter, so it receives the default version; the envelope `version` is stored in `Provenance.api_version`.
 * Retry-After is not available (the shared fetcher drops it); the RIPEstat error body on non-200
   responses is not read (the shared fetcher raises before returning the body).
 * Terms of service apply; add `NETCLASS_RIPESTAT_SOURCEAPP` for regular use.

@@ -50,8 +50,8 @@ def test_settings_is_immutable():
         Settings().cache_ttl_seconds = 1  # type: ignore[misc]
 
 
-# ------------------------------------------------------------- Stage 2 settings
-def test_stage2_defaults():
+# ------------------------------------------------------------- adapter and download settings
+def test_adapter_and_download_defaults():
     s = load_settings(env={})
     assert s.max_source_age_seconds == 86400
     assert s.max_download_bytes == 20_000_000
@@ -73,7 +73,7 @@ def test_unknown_or_empty_source_lists_are_rejected(value):
         load_settings(env={"NETCLASS_ENABLED_SOURCES": value})
 
 
-def test_stage2_numeric_overrides():
+def test_adapter_and_download_numeric_overrides():
     s = load_settings(
         env={"NETCLASS_MAX_SOURCE_AGE_SECONDS": "7200", "NETCLASS_MAX_DOWNLOAD_BYTES": "1000000"}
     )

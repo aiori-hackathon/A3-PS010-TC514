@@ -27,6 +27,7 @@ def build_adapters(
     fetcher = fetcher or RequestsFetcher(
         timeout_seconds=settings.http_timeout_seconds,
         max_bytes=settings.max_download_bytes,
+        max_retries=settings.http_max_retries,
         clock=clock,
     )
     provider = SnapshotProvider(
@@ -70,7 +71,7 @@ def classify_with_evidence(
 
 
 # --------------------------------------------------------------------------
-# Stage 3B: optional RIPEstat network context (never evidence)
+# Optional RIPEstat network context (never evidence)
 # --------------------------------------------------------------------------
 def build_context_service(
     settings: Settings,
@@ -122,7 +123,7 @@ def classify_with_context(
 
 
 # --------------------------------------------------------------------------
-# Stage 4: optional IPinfo supplementary metadata (never evidence)
+# Optional IPinfo supplementary metadata (never evidence)
 # --------------------------------------------------------------------------
 def build_ipinfo_service(
     settings: Settings,

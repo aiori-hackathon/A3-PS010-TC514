@@ -1,4 +1,4 @@
-# Stage 3C: integration audit (release `0.3.0-stage3c`)
+# Integration audit (release 0.3.0)
 
 ## 0. Read this first: what was and was not executed
 
@@ -7,9 +7,9 @@
 | Environment of the audit | Ubuntu 24.04.4 LTS (Linux x86_64), Python 3.12.3, pip 24.0. **Not Windows.** |
 | Network in the audit sandbox | None for shell commands (pip could not reach any index). |
 | `pytest` and `pydantic` | **Not installed and not installable in the audit sandbox.** |
-| Full test suite, before changes | **NOT RUN.** No baseline pass/fail count exists from this stage. |
+| Full test suite, before changes | **NOT RUN.** No baseline pass/fail count exists from this audit. |
 | Full test suite, after changes | **NOT RUN.** |
-| Test counts | **None are claimed by this stage.** Counts quoted in `WORKSTREAM_A_AUDIT.md` (269 / 286) and `STAGE3B_CHANGELOG.md` (110 / 97 / 14) were reported by earlier authors. A hand count of the parametrisation grids reproduced 14 (config) and 97 (invariance); the others were not re-derived. |
+| Test counts | **None are claimed by this audit.** Counts quoted in `WORKSTREAM_A_AUDIT.md` (269 / 286) and `RELEASE_NOTES.md` (110 / 97 / 14) were reported by earlier authors. A hand count of the parametrisation grids reproduced 14 (config) and 97 (invariance); the others were not re-derived. |
 | Live endpoint checks | **None.** No Tor, X4BNet, az0 or RIPEstat request was made by the code. |
 | `python -m compileall` (all of `src`, `scripts`, `tests`, warnings as errors) | Passed. Proves syntax only. |
 | Ad-hoc checks that need no third-party packages | Passed (see section 3). These are not the project suite and do not replace it. |
@@ -23,9 +23,9 @@ unverified and report the output.
 
 | # | Requirement | Evidence | Status |
 |---|-------------|----------|--------|
-| 1 | Inspect tree, read modules/config/docs/tests | Read in full: every module in `src/netclass` except `inspection.py` (header and imports only) and `adapters/` helpers beyond those listed; all three scripts; README, `.env.example`, RIPESTAT_CONTEXT, STAGE3B_CHANGELOG, INTEGRATION_GUIDE; `conftest.py`, `fakes.py`, `support.py` (first 60 lines), `ripestat_support.py`, `test_ripestat_invariance.py`, `test_ripestat_config.py`. Inspected structurally or by search only: the other test files (including `test_ripestat_service.py`), `DATA_SOURCES.md`, `WORKSTREAM_A_AUDIT.md`. No stray files in the archive | Partly (see left) |
+| 1 | Inspect tree, read modules/config/docs/tests | Read in full: every module in `src/netclass` except `inspection.py` (header and imports only) and `adapters/` helpers beyond those listed; all three scripts; README, `.env.example`, RIPESTAT_CONTEXT, RELEASE_NOTES, INTEGRATION_GUIDE; `conftest.py`, `fakes.py`, `support.py` (first 60 lines), `ripestat_support.py`, `test_ripestat_invariance.py`, `test_ripestat_config.py`. Inspected structurally or by search only: the other test files (including `test_ripestat_service.py`), `DATA_SOURCES.md`, `WORKSTREAM_A_AUDIT.md`. No stray files in the archive | Partly (see left) |
 | 2 | Baseline test run before changes | Impossible in sandbox (section 0) | **Not done** |
-| 3 | Stage 3A policy and tests still present | `classifier.py` has no RIPEstat reference; `adapters/tor.py`, `adapters/az0.py` IPv4-not-covered rules and `x4bnet.py` IPv6 Apple-gap recording present; `tests/test_workstream_a_audit.py` present | Verified by reading; tests not run |
+| 3 | Policy-refinement rules and tests still present | `classifier.py` has no RIPEstat reference; `adapters/tor.py`, `adapters/az0.py` IPv4-not-covered rules and `x4bnet.py` IPv6 Apple-gap recording present; `tests/test_workstream_a_audit.py` present | Verified by reading; tests not run |
 | 4 | RIPEstat strictly contextual | `ripestat.py` imports no classifier/label/evidence types (static check, also pinned by an AST test); `hosting_indicator=False` appears once and `=True` never; `classify_with_context` passes only `NetworkContext`; `test_ripestat_invariance.py` compares full classifier output with and without context over an 8-scenario x 6-holder grid | Verified by reading + static check; tests not run |
 | 5 | Imports, interfaces, config, types, errors, timestamps, cache | Reviewed; see section 2 | Verified by reading |
 | 6 | Labels exact | Regex check of `models.Label`: `Known Tor exit`, `Known hosted VPN/proxy endpoint`, `Unknown` | Verified (executed) |
@@ -33,7 +33,7 @@ unverified and report the output.
 | 8 | Apple exclusions, IPv4/IPv6 coverage, exact CIDR, provenance, UTC, SHA-256 | `x4bnet.py` subtracts exact apple CIDRs and fails closed if the exclusion list cannot load; `CidrSet` exact matching and SHA-256 helpers executed ad hoc; UTC enforced by `_require_utc`/`_utc` validators | Verified (partly executed) |
 | 9 | ASN/hosting/data-centre cannot establish VPN | RIPEstat cannot set a hosting indicator; a hosting indicator can only produce `UNKNOWN_HOSTING_ONLY`; datacenter lists never fetched (`sources.py`) | Verified by reading |
 | 10 | Unit tests need no internet | `tests/conftest.py` autouse fixture blocks `socket.connect`, `getaddrinfo`, `create_connection`; fetchers are fakes or a stub `requests` transport; the only `requests.get` in tests is the guard test that expects failure | Verified by reading |
-| 11 | No weakened/deleted/skipped tests | No test file was modified in Stage 3C | Verified |
+| 11 | No weakened/deleted/skipped tests | No test file was modified in this audit | Verified |
 | 12 | Docs match code | Fixed items in section 2 | Done |
 | 13 | No secrets/venv/reports/datasets in ZIP | Pattern scan found only variable names and comments; no `.env`, `.venv`, `data/`, `*.sqlite3`, `*.bin`, `__pycache__`, or file over 100 KB | Done |
 
@@ -42,12 +42,12 @@ unverified and report the output.
 ### Fixed (all low risk; no logic change)
 1. `ripestat.py` comment pointed to a nonexistent `build_ripestat_service`. Corrected.
 2. `http_client.USER_AGENT` still said `0.2` while the project is `0.3.x`. Updated (`test_http_client.py` compares against the constant, not a literal).
-3. `__version__` bumped to `0.3.0-stage3c`.
+3. `__version__` bumped to the 0.3.0 release identifier.
 4. Documentation claims not supported by evidence: README "exercised live in the development sandbox" and INTEGRATION_GUIDE section 11 (now attributed to earlier authors and marked not re-checked); stale "Expected: 286 passed"; README layout and roadmap.
 5. Missing caveat for RIPEstat `announced` (transit-only ASNs report `false`).
 
 ### Observed, deliberately NOT changed (design decisions or no demonstrated defect)
-* If one evidence kind's source is down, a positive match of the other kind still stands, with the outage listed in `caveats`. Documented Stage 2/3A policy, not silent.
+* If one evidence kind's source is down, a positive match of the other kind still stands, with the outage listed in `caveats`. Documented policy, not silent.
 * `UNKNOWN_HOSTING_ONLY` is unreachable through RIPEstat by design.
 * `NETCLASS_RIPESTAT_CACHE_TTL_SECONDS` is parsed through an integer cast, so `0.5` becomes `0` and disables the cache. This errs on the side of fresher data and is harmless; `0` itself is rejected from the environment.
 * The service cache compares the fetcher's `retrieved_at` with the service clock. `build_context_service` gives both the same clock; a custom fetcher with a different clock could mis-age entries.
@@ -95,21 +95,22 @@ Base `https://stat.ripe.net/data` (HTTPS enforced, configurable).
 
 ## 6. Known limitations and what needs your Windows machine
 
-* The full test suite on Windows and Python 3.12 (before/after counts; none exist from this stage).
+* The full test suite on Windows and Python 3.12 (before/after counts; none exist from this audit).
 * Live RIPEstat behaviour (real response shapes, unrouted address behaviour, HTTP 429 behaviour).
 * Live Tor Project endpoint (format, IPv6 content, size) and a fresh live run of the X4BNet and az0 sources.
 * Real overlap of Tor exits inside X4BNet ranges (`inspect_sources.py --json`).
 * Sanity floors for the Tor list are loose (10) until a live count is known.
 * All three evidence sources are current-only; historical observation times are `UNKNOWN_STALE_EVIDENCE`.
-* SQLite audit history and the Streamlit dashboard are not implemented (Stages 5-6). Models and
-  results are frozen, JSON-serialisable and UTC-based, and `db_path` is already in `Settings`, so they can be added later without changing this release.
+* At the time of this audit SQLite audit history and the Streamlit dashboard were not implemented;
+  both have since been added (see `docs/RELEASE_NOTES.md`). Models and results are frozen,
+  JSON-serialisable and UTC-based, and `db_path` was already in `Settings`.
 
 ## 7. Windows PowerShell
 
 ```powershell
 # 1. Extract (adjust the path to where you saved the ZIP)
-Get-FileHash .\viltrumites-ps010-stage3c.zip -Algorithm SHA256
-Expand-Archive -Path .\viltrumites-ps010-stage3c.zip -DestinationPath . -Force
+Get-FileHash .\viltrumites-ps010.zip -Algorithm SHA256
+Expand-Archive -Path .\viltrumites-ps010.zip -DestinationPath . -Force
 cd .\viltrumites-ps010
 
 # 2. Python 3.12 virtual environment and dependencies

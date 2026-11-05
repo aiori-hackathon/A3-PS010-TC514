@@ -1,4 +1,4 @@
-"""Stage 4 configuration and transport: token handling, defaults, header-only credentials."""
+"""IPinfo configuration and transport: token handling, defaults, header-only credentials."""
 import logging
 from pathlib import Path
 

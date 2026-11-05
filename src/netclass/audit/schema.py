@@ -7,7 +7,7 @@ VERSIONING
       code, a database of another application, and a file that is not SQLite at all are
       REFUSED and left untouched.
 
-The CHECK lists below are deliberately literal copies of the Stage 4 labels, reason codes
+The CHECK lists below are deliberately literal copies of the labels, reason codes
 and enum values: a schema version is a frozen record, and a test pins that these literals
 equal the live enums, so adding a label later forces a new migration instead of silently
 passing or silently failing inserts.

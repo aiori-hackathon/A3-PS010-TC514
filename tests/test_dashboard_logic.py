@@ -1,4 +1,4 @@
-"""Stage 6: dashboard logic (no Streamlit needed). Mocked sources only; no network.
+"""Dashboard logic (no Streamlit needed). Mocked sources only; no network.
 
 The dashboard is a presentation layer: these tests pin that it validates input first, uses the
 existing ClassificationService, skips collection for excluded addresses, keeps context out of

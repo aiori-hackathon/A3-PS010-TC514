@@ -50,7 +50,7 @@ def test_copyleft_source_is_flagged_not_for_bundling():
     assert "Do not bundle" in AZ0_VPN_SOURCE.license
 
 
-# ------------------------------------------------------------- Stage 2 policies
+# ------------------------------------------------------------- source policies
 def test_az0_dns_resolver_file_is_excluded_by_policy():
     assert len(AZ0_VPN_SOURCE.endpoints) == 5
     assert not any(url.endswith("/nordvpn.txt") for url in AZ0_VPN_SOURCE.endpoints)

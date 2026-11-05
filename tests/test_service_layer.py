@@ -1,6 +1,6 @@
-"""Service layer (Stage 4): classification stays authoritative and independent of IPinfo.
+"""Service layer: classification stays authoritative and independent of IPinfo.
 
-Mocked HTTP only. The evidence stack is the same fake world the Stage 2/3 tests use.
+Mocked HTTP only. The evidence stack is the same fake world the adapter and collector tests use.
 """
 import ast
 import json
@@ -100,7 +100,7 @@ def build(tmp_path, ip, routes=None, *, token=TOKEN, ipinfo_route=None, with_rip
 
 
 def baseline(tmp_path, ip, routes=None):
-    """What the pre-Stage-4 pipeline returns for the same world."""
+    """What the evidence pipeline alone (without the service layer) returns for the same world."""
     stack = make_stack(tmp_path / "baseline", routes)
     return classify_with_evidence(obs(ip), all_adapters(stack), Settings())
 
@@ -251,7 +251,7 @@ def test_excluded_addresses_are_never_sent_anywhere(tmp_path, excluded):
 
 
 # --------------------------------------------------------------------------- RIPEstat unchanged
-def test_ripestat_behaviour_is_identical_to_the_stage_3b_pipeline(tmp_path):
+def test_ripestat_behaviour_is_identical_to_the_direct_context_pipeline(tmp_path):
     ip = CLEAN_IP
     service, _, _, _ = build(tmp_path, ip, with_ripestat=True)
     outcome = service.classify(obs(ip), include_ripestat=True)

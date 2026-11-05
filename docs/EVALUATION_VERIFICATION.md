@@ -1,13 +1,13 @@
-# Stage 7 verification report
+# Evaluation framework verification report
 
-Date of preparation: 2026-11-01. Version `0.7.0-stage7`. Baseline: `viltrumites-ps010-stage6.zip`,
+Date of preparation: 2026-11-01. Version `0.7.0-stage7`. Baseline: the dashboard release archive,
 SHA-256 `7aa64608ec2bf46320bf32ce743152fdb3b6e35090134eef02faa0902202c49b` (re-checked after the work;
 unchanged). Baseline you verified on Windows, Python 3.12.10: **1,045 passed, 2 skipped, 0 failed**
-(your report; not re-run by the author of Stage 7).
+(your report; not re-run by the author of this release).
 
 ## Read this first: what was and was not executed
 
-**The real pytest suite was NOT run for Stage 7. Do not read this report as "the suite passed".**
+**The real pytest suite was NOT run for this release. Do not read this report as "the suite passed".**
 
 The environment that produced this package is Linux, Python 3.12.3, with **no pydantic, requests,
 pytest or Streamlit installed and no network access** (`pip` could not download anything). So:
@@ -37,11 +37,11 @@ What *was* executed, honestly described:
 | `test_evaluation_cli.py` | 13 passed, 0 failed |
 | **new tests together** | **196 passed, 0 failed, 0 skipped** |
 | `test_audit_isolation.py`, `test_dashboard_boundaries.py` (they scan the new files) | 12 and 9 passed |
-| all 30 loadable existing test files, Stage 6 baseline tree vs Stage 7 tree | **identical per-file results** (799 passed / 52 failed / 6 files unloadable on BOTH trees) |
+| all 30 loadable existing test files, baseline tree vs release tree | **identical per-file results** (799 passed / 52 failed / 6 files unloadable on BOTH trees) |
 
 The 52 failures and 6 unloadable files in the existing suite are limits of the stand-in (it has no
 `model_fields`, `ValidationError`, `ConnectTimeout`, `importorskip`, real subprocess behavior, ...).
-They are identical on the untouched Stage 6 tree, so they show the stand-in's gaps and say nothing
+They are identical on the untouched baseline tree, so they show the stand-in's gaps and say nothing
 about the real suite. The only conclusion drawn from the comparison is "no difference was
 introduced relative to the baseline under the same harness".
 
@@ -49,7 +49,7 @@ Mutation checks (scratch copies, discarded): removing the excluded-address short
 evaluation tests fail; widening `current_evidence_tolerance_seconds` to 30 days made 7 fail. So the
 tests are sensitive to the regressions they exist to catch.
 
-The static `diff -rq` against the Stage 6 tree shows exactly: modified `.gitignore`, `README.md`,
+The static `diff -rq` against the baseline tree shows exactly: modified `.gitignore`, `README.md`,
 `src/netclass/__init__.py` (version string only); everything else added. No existing test file was
 touched.
 
@@ -94,14 +94,14 @@ Get-FileHash evaluation\reports\ps010-eval-v1-replay.json -Algorithm SHA256
   `fc /b` or compare the two files; `test_committed_release_reports_equal_a_fresh_run` will also
   show the difference. Do not edit the committed files by hand.
 
-Also keep the Stage 6 manual checks in mind (`python -m streamlit run app.py`): only the Status tab's
+Also keep the dashboard manual checks in mind (`python -m streamlit run app.py`): only the Status tab's
 version string changed (`0.7.0-stage7`).
 
 ## Inspection against your requirements
 
 | requirement | how it is met | evidence |
 |---|---|---|
-| 1. Preserve Stage 6 baseline | no existing test, classifier, policy, audit, retention, CLI or dashboard file changed; Stage 6 ZIP untouched | `diff -rq`; ZIP SHA re-checked; `test_policy_and_label_constants_are_the_stage_6_ones` |
+| 1. Preserve baseline | no existing test, classifier, policy, audit, retention, CLI or dashboard file changed; baseline ZIP untouched | `diff -rq`; ZIP SHA re-checked; `test_policy_and_label_constants_are_the_shipped_ones` |
 | 2. Strict dataset validation | `dataset.py` rejects malformed/duplicate keys, malformed records, duplicate ids, invalid labels/reason codes/IPs/timestamps, missing provenance, circular sources, current-only-as-historical; unlabeled handling explicit (`unlabeled_reason`, listed, never scored) | 97 dataset tests incl. 42 malformed-input cases and the 3600/3601 s boundary |
 | 3. Deterministic output | fixed clock, sorted keys/cases, bytes written with LF, no path/host/Python/wall-clock; dataset SHA-256 and exact configuration recorded | `test_identical_input_and_clock_give_byte_identical_json_and_markdown`, `test_output_has_no_machine_specific_content`, CLI two-run byte comparison, committed-report test |
 | 4. Isolation | no audit/dashboard/network/db/dotenv import; `audit=None`; no files created; existing `data\` untouched; excluded addresses make 0 fetches; context-only metadata cannot change any of the 42 classifications | `test_evaluation_isolation.py`, `test_excluded_addresses_trigger_zero_evidence_fetches` |

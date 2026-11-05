@@ -1,4 +1,4 @@
-r"""Inspect and maintain the SQLite audit history (Stage 5). Nothing here runs automatically.
+r"""Inspect and maintain the SQLite audit history. Nothing here runs automatically.
 
 Run from the project root:
     python scripts\audit_history.py info

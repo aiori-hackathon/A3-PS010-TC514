@@ -27,7 +27,9 @@ def main() -> int:
 
     settings = load_settings()
     fetcher = RequestsFetcher(
-        timeout_seconds=settings.http_timeout_seconds, max_bytes=settings.max_download_bytes
+        timeout_seconds=settings.http_timeout_seconds,
+        max_bytes=settings.max_download_bytes,
+        max_retries=settings.http_max_retries,
     )
     report = inspect_sources(fetcher, max_source_age_seconds=settings.max_source_age_seconds)
     print(format_report(report))

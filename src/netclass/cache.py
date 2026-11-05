@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Mapping, Optional
 
+from .redaction import redact_text, redact_url
 from .hashing import sha256_hex, verify_sha256
 
 logger = logging.getLogger(__name__)
@@ -141,5 +142,7 @@ class SnapshotStore:
         except FileNotFoundError:
             return CacheLookup(None, "cache index points at a missing snapshot file")
         except (OSError, ValueError, KeyError, TypeError) as exc:
-            logger.warning("Unreadable cache entry for %s: %s", url, exc)
+            logger.warning(
+                "Unreadable cache entry for %s: %s", redact_url(url), redact_text(str(exc))
+            )
             return CacheLookup(None, f"cache entry unreadable ({type(exc).__name__})")

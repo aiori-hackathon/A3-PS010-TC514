@@ -1,7 +1,7 @@
-"""CLI contracts for Stage 5.
+"""CLI contracts for audit history.
 
 * Without --audit (and with the setting off) classify_ip.py output, exit codes and side effects
-  are exactly Stage 4: no "audit" section, no database file, nothing extra on stderr.
+  are exactly those without auditing: no "audit" section, no database file, nothing extra on stderr.
 * --audit saves and adds an "audit" section; a failed save exits 5 but still prints the result.
 * audit_history.py maintains the history; purge / delete-ip are dry runs without --yes.
 
@@ -60,7 +60,7 @@ def classify_cli(monkeypatch, capsys, tmp_path):
     return run
 
 
-# ------------------------------------------------------------------ disabled: exactly Stage 4
+# ------------------------------------------------------------------ disabled: exactly the unaudited behaviour
 def test_without_the_flag_nothing_changes_and_nothing_is_written(classify_cli):
     code, out, err, db = classify_cli(CLEAN_IP, "--at", AT)
     assert code == 0 and err == ""
@@ -68,7 +68,7 @@ def test_without_the_flag_nothing_changes_and_nothing_is_written(classify_cli):
     assert not db.exists()
 
 
-def test_all_stage4_flags_without_audit_write_nothing(classify_cli):
+def test_evidence_flag_without_audit_writes_nothing(classify_cli):
     code, out, err, db = classify_cli(CLEAN_IP, "--at", AT, "--evidence")
     assert code == 0 and err == "" and list(json.loads(out)) == ["result", "evidence"]
     assert not db.exists() and not list(db.parent.glob("*.sqlite3"))

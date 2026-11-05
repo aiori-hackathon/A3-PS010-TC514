@@ -1,13 +1,13 @@
 # Data sources: inspection notes
 
-Stage 2 update (2026-10-30): the GitHub sources were also downloaded and parsed
-live by the Stage 2 code; see section 4 for the policies and section 5 for the
+Update (2026-10-30): the GitHub sources were also downloaded and parsed
+live by the adapter code; see section 4 for the policies and section 5 for the
 latest observed numbers.
 
 Inspected on 2026-10-28. The X4BNet and az0 repositories were cloned and their
 files parsed. The Tor list could not be downloaded in that session (the
 sandbox had no route to check.torproject.org), so its entry below rests on Tor
-Project documentation and MUST be verified in Stage 2.
+Project documentation and MUST be verified against a real download.
 
 Not legal advice: licence notes are a reading of the published terms.
 
@@ -90,7 +90,7 @@ Source-provided timestamps (Git commit time for the GitHub files, a
 Last-Modified header for Tor if present) are recorded as provenance but do not
 extend validity.
 
-## Open decisions (to settle with real data in Stage 2/3)
+## Open decisions (to settle with real data)
 
 1. Tor/VPN overlap. Today any Tor match plus any VPN match gives Unknown
    (conflict). Because X4BNet's inputs include a Tor-exit ASN, real Tor exits
@@ -109,7 +109,7 @@ extend validity.
    commit-pinned snapshots for past dates. Treat as a stretch goal; do not
    claim historical support until it is implemented and tested.
 
-## 4. Stage 2 policy decisions
+## 4. Adapter policy decisions
 
 | Question | Decision | Where enforced / tested |
 |----------|----------|-------------------------|

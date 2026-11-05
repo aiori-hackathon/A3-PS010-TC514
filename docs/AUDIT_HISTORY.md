@@ -1,4 +1,4 @@
-# SQLite audit history (Stage 5)
+# SQLite audit history
 
 An optional, local, append-only record of classification runs. It is **off by default**.
 It never changes a label, a reason code or any evidence, and the classification path never
@@ -8,7 +8,7 @@ reads it.
 
 | Way | Effect |
 |-----|--------|
-| nothing set | Stage 4 behaviour. No database is created, nothing is written. |
+| nothing set | Behaviour without auditing. No database is created, nothing is written. |
 | `NETCLASS_AUDIT_ENABLED=true` in `.env` | `classify_ip.py` saves every run. |
 | `classify_ip.py IP --audit` | Saves this run only. |
 | `classify_ip.py IP --no-audit` | Does not save, even if the setting is on. |
@@ -29,7 +29,7 @@ The classification is always returned. `classify_and_record` returns an `Audited
 
 `classify_ip.py --audit` prints an `"audit"` section, and when the save did not happen it prints
 `WARNING: ... NOT saved` on stderr and exits **5** (the result JSON is still printed). With
-auditing off, output and exit codes are identical to Stage 4.
+auditing off, output and exit codes are identical to the unaudited behaviour.
 
 ## Schema (version 1)
 
@@ -48,7 +48,7 @@ auditing off, output and exit codes are identical to Stage 4.
   Deleting a run cascades to its evidence and metadata.
 
 `result_json` includes the classification's existing display-only `network_context` field
-(Stage 3B), because it is part of the Stage 4 result; it is not evidence and is not stored in
+(RIPEstat), because it is part of the service result; it is not evidence and is not stored in
 `evidence_records`.
 
 ### Migrations and refusals
@@ -99,5 +99,5 @@ Exit codes: 0 ok, 1 database problem, 2 invalid arguments.
 
 ## What it does not do
 
-No dashboard (Stage 6), no encryption, no remote storage, no automatic cleanup, no use of history
+No write access from the dashboard (its history view is read-only), no encryption, no remote storage, no automatic cleanup, no use of history
 for classification, no deduplication (every call is its own row).

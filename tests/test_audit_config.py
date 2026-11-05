@@ -1,4 +1,4 @@
-"""Stage 5 settings: audit is off by default, retention defaults to 90 days, 0 only when explicit."""
+"""Audit settings: audit is off by default, retention defaults to 90 days, 0 only when explicit."""
 from pathlib import Path
 
 import pytest
@@ -6,7 +6,7 @@ import pytest
 from netclass.config import Settings, load_settings
 
 
-def test_defaults_keep_stage4_behaviour():
+def test_defaults_keep_auditing_off():
     s = Settings()
     assert s.audit_enabled is False
     assert s.audit_retention_days == 90 and s.audit_keeps_forever is False
@@ -53,7 +53,7 @@ def test_db_path_setting_is_used():
     assert s.db_path == Path("somewhere/else.sqlite3")
 
 
-def test_stage4_settings_are_unaffected():
+def test_ipinfo_and_cache_settings_are_unaffected():
     s = load_settings(env={"NETCLASS_AUDIT_ENABLED": "true", "IPINFO_TOKEN": "tok"})
     assert s.ipinfo_enabled is True and s.cache_ttl_seconds == 1800
     assert "tok" not in repr(s)

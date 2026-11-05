@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any, Callable, Generic, Optional, TypeVar
 
+from .redaction import redact_text, redact_url
 from .cache import Snapshot, SnapshotStore
 from .errors import SourceError, SourceErrorKind
 from .hashing import sha256_hex
@@ -149,6 +150,8 @@ class SnapshotProvider:
             try:
                 self._store.save(snapshot)
             except OSError as exc:  # a cache write problem must not break evidence retrieval
-                logger.warning("Could not write cache for %s: %s", url, exc)
+                logger.warning(
+                    "Could not write cache for %s: %s", redact_url(url), redact_text(str(exc))
+                )
                 notes.append(f"cache write failed ({type(exc).__name__}); result not retained")
         return LoadedSnapshot(replace(snapshot, notes=tuple(notes)), parsed)

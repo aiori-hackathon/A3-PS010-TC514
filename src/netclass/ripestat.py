@@ -1,4 +1,4 @@
-"""RIPEstat network-context service (Stage 3B).
+"""RIPEstat network-context service.
 
 PURPOSE
     Provide registration and routing CONTEXT for an IP address: the ASN(s) that

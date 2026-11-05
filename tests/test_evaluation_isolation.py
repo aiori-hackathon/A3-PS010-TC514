@@ -4,7 +4,7 @@
 * an evaluation run creates no file or directory, makes no network call, writes no audit row;
 * the classification an evaluation records is exactly what the existing pipeline returns;
 * context-only metadata (RIPEstat holder names, IPinfo AS names) cannot change any label;
-* the policy constants and the three labels are the Stage 6 ones.
+* the policy constants and the three labels are the shipped ones.
 """
 import ast
 import os
@@ -138,7 +138,7 @@ def test_recorded_classification_equals_the_existing_pipeline_result():
         assert via_service.evidence == records, case.case_id
 
 
-def test_policy_and_label_constants_are_the_stage_6_ones():
+def test_policy_and_label_constants_are_the_shipped_ones():
     assert POLICY_VERSION == "ps010-policy-1"
     assert SERVICE_VERSION == "ps010-service-1"
     assert [l.value for l in Label] == ["Known Tor exit", "Known hosted VPN/proxy endpoint", "Unknown"]

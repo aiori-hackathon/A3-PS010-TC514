@@ -23,6 +23,6 @@ test-results.txt
 # Streamlit local secrets (never commit)
 .streamlit/secrets.toml
 
-# Stage 7: local evaluation outputs (release-evidence reports live in evaluation/reports/ and ARE committed)
+# Local evaluation outputs (release-evidence reports live in evaluation/reports/ and ARE committed)
 evaluation/output/
 evaluation/output-live/

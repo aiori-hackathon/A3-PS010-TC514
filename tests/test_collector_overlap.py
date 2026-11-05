@@ -1,4 +1,4 @@
-"""End-to-end: mocked HTTP -> adapters -> evidence records -> Stage 1 classifier.
+"""End-to-end: mocked HTTP -> adapters -> evidence records -> classifier.
 
 These tests pin down the documented overlap/conflict policy:
   * Any applicable Tor match together with any applicable VPN match is a conflict.
@@ -132,7 +132,7 @@ def test_tor_source_down_never_yields_a_negative(tmp_path):
 
 
 def test_vpn_match_with_tor_source_down_stands_but_carries_a_caveat(tmp_path):
-    # Documented limitation of the Stage 1 policy: a positive from one kind is not
+    # Documented limitation of the classification policy: a positive from one kind is not
     # withdrawn because the other kind's source is down; the gap is reported as a caveat.
     routes = standard_routes()
     routes[TOR_URL] = timeout(TOR_URL)

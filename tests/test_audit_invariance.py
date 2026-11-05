@@ -1,4 +1,4 @@
-"""Stage 5 must not change the classification policy: labels, reason codes, enum values."""
+"""Auditing must not change the classification policy: labels, reason codes, enum values."""
 from netclass.audit import schema
 from netclass.classifier import POLICY_VERSION
 from netclass.models import (

@@ -1,4 +1,4 @@
-"""IPinfo adapter (Stage 4): mocked HTTP only, no token or network needed."""
+"""IPinfo adapter: mocked HTTP only, no token or network needed."""
 import ast
 import logging
 from pathlib import Path

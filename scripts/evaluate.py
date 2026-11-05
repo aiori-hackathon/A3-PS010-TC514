@@ -1,4 +1,4 @@
-"""Stage 7 evaluation command.
+"""Evaluation command.
 
     python scripts\\evaluate.py --check-only
     python scripts\\evaluate.py --out-dir evaluation\\output
@@ -27,7 +27,7 @@ MD_NAME = "evaluation-report.md"
 
 
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="PS-010 evaluation (Stage 7).")
+    p = argparse.ArgumentParser(description="PS-010 evaluation.")
     p.add_argument("--dataset", type=Path, default=DEFAULT_DATASET, help="dataset JSON file")
     p.add_argument("--out-dir", type=Path, default=None,
                    help="write evaluation-report.json and .md here (default: print JSON to stdout)")

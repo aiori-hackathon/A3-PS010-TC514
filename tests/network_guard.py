@@ -1,6 +1,6 @@
 """The test suite's network guard (stdlib only, so it can be tested on its own).
 
-Default: every attempt to connect or resolve a name raises, exactly as in Stage 1-5.
+Default: every attempt to connect or resolve a name raises, exactly as before the loopback option existed.
 
 With ``allow_loopback=True`` (used only by tests marked ``@pytest.mark.allow_loopback``) the guard
 lets through connections to this machine and nothing else: a loopback IP literal (127.0.0.0/8,

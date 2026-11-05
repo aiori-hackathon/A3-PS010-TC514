@@ -1,6 +1,6 @@
 """RIPEstat context is metadata only: it can never change a primary classification.
 
-These tests pin the Stage 3B rule that ASN ownership, a hosting/VPN-sounding
+These tests pin the rule that ASN ownership, a hosting/VPN-sounding
 holder name or a data-centre prefix is not evidence. They use only mocked data.
 """
 import ast
@@ -110,14 +110,14 @@ def test_context_does_not_remove_a_known_label_either():
 
 @pytest.mark.parametrize("holder", SUSPICIOUS_HOLDERS)
 @pytest.mark.parametrize("asns", [("64496",), ("64496", "64497"), ("1",)])
-def test_service_projection_has_no_hosting_indicator_so_stage_3a_hosting_rule_is_unreachable(holder, asns):
+def test_service_projection_has_no_hosting_indicator_so_the_hosting_only_rule_is_unreachable(holder, asns):
     display = context_for(holder, asns=asns)
     assert display.hosting_indicator is False
     assert display.hosting_indicator_basis is None
 
 
-def test_stage_3a_hosting_policy_is_unchanged_for_a_manually_built_indicator():
-    # The Stage 3A rule still exists: a hosting indicator explains an Unknown but
+def test_hosting_only_policy_is_unchanged_for_a_manually_built_indicator():
+    # The hosting-only rule still exists: a hosting indicator explains an Unknown but
     # never produces a VPN label. Only an explicit, non-RIPEstat source may set it.
     manual = NetworkContext(asn=64496, hosting_indicator=True, hosting_indicator_basis="test fixture")
     result = classify(obs(), [tor(S.NO_MATCH), vpn(S.NO_MATCH)], manual)

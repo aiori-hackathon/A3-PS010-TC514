@@ -1,4 +1,4 @@
-"""The SQLite audit store (Stage 5). Standard library only; no pydantic import.
+"""The SQLite audit store. Standard library only; no pydantic import.
 
 WHAT IT IS
     An append-only history of classification runs: the authoritative classification

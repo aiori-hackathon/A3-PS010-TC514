@@ -1,6 +1,6 @@
-"""UI-free logic for the Stage 6 dashboard. No Streamlit import lives here.
+"""UI-free logic for the dashboard. No Streamlit import lives here.
 
-This module is a thin layer over the existing Stage 5 APIs. It contains NO classification rule:
+This module is a thin layer over the existing service and audit-store APIs. It contains NO classification rule:
 labels, reason codes and explanations always come from ``ClassificationService``.
 
 Guarantees (pinned by tests/test_dashboard_*.py)

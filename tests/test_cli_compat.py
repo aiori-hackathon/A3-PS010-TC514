@@ -1,4 +1,4 @@
-"""CLI contracts: Stage 3C commands and output are unchanged; Stage 4 flags are opt-in.
+"""CLI contracts: the base commands and output are unchanged; IPinfo flags are opt-in.
 
 In-process tests drive the script `main()` with fakes. The subprocess tests run the real
 scripts but only for inputs that need no network (excluded addresses, disabled token).
@@ -64,7 +64,7 @@ def direct(tmp_path, ip=CLEAN_IP):
     return classify_with_evidence(obs(ip), all_adapters(stack), Settings())
 
 
-# ------------------------------------------------------------------ Stage 3C contracts
+# ------------------------------------------------------------------ base command contracts
 def test_plain_command_prints_exactly_the_result_object(cli, tmp_path):
     code, out, err, _ = cli(CLEAN_IP, "--at", AT)
     result, _records = direct(tmp_path)
@@ -92,7 +92,7 @@ def test_context_flag_adds_ripestat_context_exactly_as_before(cli, tmp_path):
     assert doc["ripestat_context"] == ripe.model_dump(mode="json")
 
 
-def test_no_stage4_output_appears_without_the_ipinfo_flag(cli):
+def test_no_ipinfo_output_appears_without_the_ipinfo_flag(cli):
     _, out, _, handles = cli(CLEAN_IP, "--at", AT, "--context", "--evidence", ipinfo_route=lite(CLEAN_IP))
     assert "ipinfo" not in out.lower()
     assert handles["ipinfo"].requested == []  # a configured token alone sends nothing
@@ -116,7 +116,7 @@ def test_ipv6_argument_still_works(cli):
     assert doc["result"]["label"] == "Unknown"
 
 
-# ------------------------------------------------------------------ Stage 4 flag
+# ------------------------------------------------------------------ IPinfo flag
 def test_ipinfo_flag_adds_a_separate_section_and_never_changes_the_result(cli):
     _, plain, _, _ = cli(TOR_IP, "--at", AT, ip=TOR_IP)
     code, out, _, handles = cli(

@@ -1,4 +1,4 @@
-"""Structural guarantees of Stage 5, checked on the source (no pydantic, no network).
+"""Structural guarantees of the audit package, checked on the source (no pydantic, no network).
 
 * The classification path cannot read the audit history.
 * Nothing purges or deletes except the explicit maintenance calls.
@@ -31,7 +31,7 @@ def imports_of(path):
 
 
 def test_only_config_service_and_the_dashboard_logic_import_the_audit_package():
-    """Stage 6 made the dashboard's read-only history view the third, explicit importer.
+    """The dashboard's read-only history view is the third, explicit importer.
 
     The list is closed: any other module (above all the classifier and collector) importing the
     audit package fails this test. What the dashboard may import and call is pinned, name by

@@ -1,350 +1,327 @@
-# Viltrumites — AIORI-3 PS-010
+# Viltrumites: AIORI-3 PS-010 prototype
 
-### Evidence-Based IP Network Type Classification
+Evidence-based IP network-type classifier. For one IP address and one UTC
+observation time it returns exactly one primary label:
 
-**Team Name:** Viltrumites
-**Team Code:** `A3-PS010-TC514`
-**Competition:** AIORI-3 Hackathon
-**Problem Statement:** PS-010
+1. Known Tor exit
+2. Known hosted VPN/proxy endpoint
+3. Unknown
 
----
+It classifies network evidence only. It does not identify people or devices.
 
-## 1. Project Overview
+## Features
 
-IP addresses may be associated with Tor exit relays, VPN services, or proxy infrastructure. However, network intelligence sources can be incomplete, outdated, unavailable, or conflicting. Treating uncertain information as definitive can lead to misleading classifications.
+Implemented and tested with mocked HTTP (no internet is needed for the tests):
 
-**Viltrumites** is an evidence-based IP network classification prototype that evaluates available network intelligence, applies deterministic decision rules, and provides explainable results.
+- **Classification core:** configuration, validated models, address policy, deterministic
+  classification rules, SHA-256 helpers.
+- **Evidence sources:** HTTP client with timeouts, size caps and bounded retries, snapshot cache
+  with SHA-256 verification and freshness rules, strict parsers, CIDR matching, adapters for the
+  Tor exit list, X4BNet `output/vpn` and az0 `data/input/ip`, evidence collector,
+  source-inspection script, classification CLI.
+- **Policy refinement ("Workstream A"):** see `docs/WORKSTREAM_A_AUDIT.md` (policy decisions,
+  floors review, added tests).
+- **RIPEstat network context:** ASN, prefix and holder as metadata only. It never changes the
+  label. See `docs/RIPESTAT_CONTEXT.md`.
+- **Service layer and IPinfo metadata:** optional IPinfo Lite metadata (disabled unless
+  `IPINFO_TOKEN` is set; supplementary only, never evidence) behind a small service layer,
+  `netclass.service.ClassificationService`. See `docs/IPINFO_CONTEXT.md`.
+- **Audit history:** optional SQLite history (off by default; never changes a label; never read
+  during classification). See `docs/AUDIT_HISTORY.md`.
+- **Dashboard:** local Streamlit dashboard over the existing service and audit store (`app.py`,
+  `src/netclass/dashboard/`). See the dashboard section below and `docs/DASHBOARD_VERIFICATION.md`.
+- **Evaluation:** reproducible evaluation framework (`scripts\evaluate.py`,
+  `src/netclass/evaluation/`, `evaluation/datasets/ps010-eval-v1/`). It drives the existing
+  classification service over documented fixtures and reports policy conformance, coverage and
+  selective classification. It adds no classifier, no label and no policy change. The shipped
+  dataset is SYNTHETIC ONLY: it contains no independently sourced reference cases, so no real-world
+  accuracy figure exists. See the Evaluation section below, `docs/EVALUATION.md` and
+  `docs/EVALUATION_VERIFICATION.md`.
+- **Source health and live verification:** per-source health states and a bounded, opt-in live
+  check (`scripts\verify_sources.py --live`). See `docs/SOURCE_HEALTH.md`,
+  `docs/LIVE_VERIFICATION.md` and `docs/SOURCE_HEALTH_VERIFICATION.md`. Release history:
+  `docs/RELEASE_NOTES.md`.
 
-The system focuses on conservative classification: it requires qualifying evidence, handles uncertainty explicitly, and does not infer VPN usage merely because an IP address belongs to a hosting provider or a particular autonomous system.
+Not yet done: evaluation against independent, timestamped reference labels (the schema, loader and
+validator exist; supply the cases) and a recorded live verification run of every real source
+endpoint.
 
-### Classification Labels
+Verification status: the tests use mocked HTTP only. No live RIPEstat, IPinfo or Tor Project
+request has been verified by the authors. An earlier maintainer reported a live run of the X4BNet
+and az0 endpoints; the integration audit did not repeat it. Run `python scripts\inspect_sources.py`,
+`python scripts\ripestat_context.py 8.8.8.8` and `python scripts\verify_sources.py --live` on your
+machine to verify live behaviour. See `docs/INTEGRATION_GUIDE.md`, section 11,
+`docs/INTEGRATION_AUDIT.md` and `docs/RELEASE_NOTES.md` for exactly what was run for each
+capability, and `docs/DASHBOARD_VERIFICATION.md`, `docs/EVALUATION_VERIFICATION.md` and
+`docs/SOURCE_HEALTH_VERIFICATION.md` for the verification records.
 
-The system returns exactly one primary label:
+## Requirements
 
-| Label | Meaning |
-|---|---|
-| `Known Tor exit` | Qualifying evidence supports a Tor exit classification. |
-| `Known hosted VPN/proxy endpoint` | Qualifying VPN/proxy evidence supports the classification. |
-| `Unknown` | Evidence is insufficient, unavailable, stale, or conflicting. |
+- Windows 10/11, PowerShell, Python 3.12 (`py -3.12 --version`)
+- Internet access only for the live scripts and the dashboard's lookups, not for the tests
+- Streamlit (installed by `requirements.txt`) for the dashboard
 
-The classifier evaluates network evidence only. It does not identify individuals or devices. An `Unknown` result does not mean that an IP address is safe or definitely not associated with a VPN.
+## Setup (Windows PowerShell)
 
-## 2. Key Features
+Run from the folder that contains this README:
 
-- **Evidence-based classification:** Uses deterministic rules rather than assumptions based on network ownership.
-- **Multiple intelligence sources:** Integrates Tor exit information, X4BNet VPN ranges, and az0 VPN IP data.
-- **Conservative decision-making:** Handles stale, malformed, unavailable, and conflicting evidence.
-- **Source validation and caching:** Uses strict parsing, SHA-256 verification, and freshness checks.
-- **Network context:** Optional RIPEstat metadata, including ASN, prefix, and network holder.
-- **Optional IP metadata:** IPinfo Lite integration, disabled unless configured and explicitly requested.
-- **Local audit history:** Optional SQLite recording with explicit opt-in and documented retention controls.
-- **Interactive dashboard:** Streamlit interface for classification, evidence inspection, context, and audit history.
-- **Reproducible evaluation:** A deterministic evaluation framework with synthetic fixtures and JSON/Markdown reports.
-- **Automated testing:** A pytest suite designed to run with mocked HTTP interactions rather than relying on external network availability.
-
-## 3. How the System Works
-
-The classification pipeline follows these steps:
-
-1. **Input validation:** Validate the IP address and apply the address-exclusion policy.
-2. **Evidence collection:** Gather information from supported intelligence sources through source adapters.
-3. **Data-quality checks:** Evaluate source availability, parsing integrity, freshness, and applicability.
-4. **Classification:** Apply deterministic rules to qualifying evidence and resolve conflicts conservatively.
-5. **Result generation:** Return a primary label, reason codes, evidence records, and relevant caveats.
-6. **Optional enrichment:** Retrieve supplementary network metadata when requested.
-7. **Optional auditing:** Record a classification locally only when the applicable audit opt-in is enabled.
-
-### Classification Safeguards
-
-- Hosting-provider or ASN information alone never establishes a VPN/proxy classification.
-- RIPEstat and IPinfo are supplementary metadata sources; they cannot create or override a label.
-- Conflicting Tor and VPN evidence results in `Unknown`.
-- Failed, malformed, empty, truncated, or stale source data is not treated as a negative match.
-- Current intelligence snapshots do not establish an IP address's historical status.
-- Private, loopback, link-local, multicast, reserved, shared, and documentation addresses are excluded according to the project's address policy.
-- Apple Private Relay ranges and DNS resolver addresses are not treated as VPN evidence.
-
-## 4. Technical Architecture
-
-| Component | Technology / Responsibility |
-|---|---|
-| Core classifier | Python; deterministic classification rules |
-| Address validation | Python `ipaddress` module |
-| Data models | Pydantic |
-| HTTP client | `requests`, with timeouts, size limits, and HTTPS restrictions |
-| Source adapters | Tor Project, X4BNet, and az0 |
-| Snapshot cache | SHA-256 verification, caching, and freshness rules |
-| Service layer | `ClassificationService` |
-| Network context | Optional RIPEstat integration |
-| IP metadata | Optional IPinfo Lite integration |
-| Audit history | SQLite with migrations and privacy-conscious record handling |
-| Dashboard | Streamlit |
-| Evaluation | Python evaluation framework, JSON fixtures, and Markdown/JSON reports |
-| Testing | pytest with fixtures and mocked HTTP transport |
-
-### Data Sources
-
-| Source | Purpose | Licence information documented by the project |
-|---|---|---|
-| Tor Project bulk exit list | Tor exit evidence | No licence stated at the endpoint in the project documentation |
-| X4BNet `lists_vpn`, `output/vpn/` | VPN CIDR ranges | MIT |
-| az0 `vpn_ip`, `data/input/ip/` | VPN IP evidence | GPL-3.0-or-later |
-
-The project downloads source data at runtime rather than including the datasets in the repository. Do not commit or redistribute downloaded az0 data with this project. Refer to `docs/DATA_SOURCES.md` for further details.
-
-## 5. Repository Structure
-
-```text
-.
-├── app.py
-├── src/
-│   └── netclass/
-│       ├── adapters/
-│       ├── audit/
-│       ├── dashboard/
-│       ├── evaluation/
-│       ├── address_policy.py
-│       ├── classifier.py
-│       ├── collector.py
-│       ├── config.py
-│       ├── models.py
-│       ├── service.py
-│       └── ...
-├── scripts/
-│   ├── classify_ip.py
-│   ├── inspect_sources.py
-│   ├── ripestat_context.py
-│   ├── ipinfo_context.py
-│   ├── audit_history.py
-│   └── evaluate.py
-├── tests/
-├── docs/
-├── evaluation/
-│   ├── datasets/
-│   │   └── ps010-eval-v1/
-│   └── reports/
-├── .streamlit/
-├── .env.example
-├── requirements.txt
-├── requirements-dev.txt
-├── pytest.ini
-└── README.md
-```
-
-- `src/netclass/` contains the classification engine, source integrations, service layer, dashboard logic, audit functionality, and evaluation modules.
-- `scripts/` contains command-line utilities for classification, source inspection, context lookups, audit history, and evaluation.
-- `tests/` contains the automated test suite.
-- `docs/` contains design decisions, integration instructions, change logs, verification reports, and limitations.
-- `evaluation/` contains the versioned evaluation dataset and release-evidence reports.
-
-## 6. Installation and Setup
-
-### Prerequisites
-
-- Windows 10 or Windows 11
-- Python 3.12
-- Internet access for live source lookups; the automated tests are designed to run offline
-
-### Install Dependencies
-
-Open Windows CMD and navigate to the repository root.
-
-Create and activate a virtual environment:
-
-```cmd
-py -3.12 --version
+```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\activate.bat
-```
-
-Install the project dependencies:
-
-```cmd
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements-dev.txt
+Copy-Item .env.example .env
 ```
 
-Create your local environment configuration:
+If PowerShell blocks `Activate.ps1`:
 
-```cmd
-copy .env.example .env
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-Configure optional credentials only if you need them. Keep `.env` private and never commit API tokens or other secrets to GitHub.
+## Run the tests
 
-## 7. Running the Project
-
-### A. Classify an IP Address
-
-```cmd
-python scripts\classify_ip.py 8.8.8.8 --evidence
-```
-
-The command displays the classification and its supporting evidence.
-
-### B. Include RIPEstat Context
-
-```cmd
-python scripts\classify_ip.py 8.8.8.8 --context
-```
-
-RIPEstat information is supplementary context and does not determine the classification.
-
-### C. Include IPinfo Metadata
-
-```cmd
-python scripts\classify_ip.py 8.8.8.8 --ipinfo
-```
-
-This requires `IPINFO_TOKEN` to be configured in `.env`. IPinfo is optional, and the lookup sends the queried IP address to the third-party service. Its metadata does not change the label.
-
-### D. Launch the Dashboard
-
-```cmd
-python -m streamlit run app.py
-```
-
-Open [http://localhost:8501](http://localhost:8501) in your browser.
-
-The dashboard provides IP classification, evidence inspection, optional context lookups, and access to existing audit history. It is intended for local use.
-
-### E. Use the Audit History
-
-To explicitly save a classification through the CLI:
-
-```cmd
-python scripts\classify_ip.py 8.8.8.8 --audit
-```
-
-View recorded history:
-
-```cmd
-python scripts\audit_history.py list
-```
-
-Preview the retention purge:
-
-```cmd
-python scripts\audit_history.py purge
-```
-
-Deletion requires the documented confirmation option, `--yes`. Review `docs/AUDIT_HISTORY.md` before enabling or managing audit history.
-
-## 8. Testing
-
-Run the complete automated test suite:
-
-```cmd
+```powershell
 python -m pytest -v
 ```
 
-Run the Stage 7 evaluation tests separately:
+The suite blocks network access on purpose (`tests\conftest.py`), so it
+cannot pass by accident through the internet. Keep the output of your run.
 
-```cmd
-python -m pytest tests\test_evaluation_*.py -v
+The evaluation tests alone: `python -m pytest tests\test_evaluation_*.py -v`.
+
+## Evaluation
+
+```powershell
+python scripts\evaluate.py --check-only                 # validate the dataset, run nothing
+python scripts\evaluate.py --out-dir evaluation\output   # offline replay; writes JSON + Markdown
+python scripts\evaluate.py --strict                      # exit 3 on a mismatch or invariant violation
 ```
 
-### Recorded Verification Results
+The default run is an offline, deterministic replay: every case goes through the real
+`ClassificationService` and adapters, with downloads answered from fixtures. It never uses the
+network, `.env`, `data\` or the audit history. `--live` is an explicit opt-in for
+independently sourced reference cases (none ship in v1) and is not deterministic. Reports label
+synthetic policy conformance and reference accuracy separately; synthetic results are never
+real-world accuracy. Details and every metric denominator: `docs/EVALUATION.md`.
 
-The recorded Stage 7 test run on the developer's Windows environment completed with:
+## Try it with live data
 
-| Metric | Result |
-|---|---:|
-| Tests passed | 1,241 |
-| Tests skipped | 2 |
-| Total execution time | 189.16 seconds |
-
-The two skipped tests concern POSIX-specific permission behavior.
-
-These are recorded test results, not proof that every integration has been independently verified against live external services or in a production deployment.
-
-## 9. Stage 7 — Evaluation Framework
-
-Stage 7 introduces a reproducible evaluation framework that runs the existing classification service against a documented dataset. It evaluates policy conformance, coverage, and selective classification without introducing a new classifier or changing the three primary labels.
-
-### Validate the Dataset
-
-```cmd
-python scripts\evaluate.py --check-only
+```powershell
+python scripts\inspect_sources.py          # verify endpoints, formats, overlaps
+python scripts\classify_ip.py 8.8.8.8 --evidence
+python scripts\classify_ip.py 8.8.8.8 --context   # adds RIPEstat context (metadata only)
+python scripts\ripestat_context.py 8.8.8.8        # RIPEstat context alone
+python scripts\classify_ip.py 8.8.8.8 --ipinfo    # adds IPinfo metadata (needs IPINFO_TOKEN; metadata only)
+python scripts\ipinfo_context.py 8.8.8.8          # IPinfo metadata alone (exit 4 = disabled)
 ```
 
-### Run an Offline Evaluation
+IPinfo is off by default. To enable it, put your token in `.env` as `IPINFO_TOKEN`; to disable it,
+blank it. A lookup sends the public IP address to IPinfo and is made only when you pass `--ipinfo`.
+It never changes the label. Details, limits and privacy notes: `docs/IPINFO_CONTEXT.md`.
 
-```cmd
-python scripts\evaluate.py --out-dir evaluation\output
+Calling it from Python:
+
+```python
+from datetime import datetime, timezone
+from netclass.config import load_settings
+from netclass.models import Observation
+from netclass.service import ClassificationService
+
+service = ClassificationService.from_settings(load_settings())
+outcome = service.classify(
+    Observation(ip="8.8.8.8", observed_at=datetime.now(timezone.utc)),
+    include_ripestat=False,   # RIPEstat context, optional
+    include_ipinfo=True,      # IPinfo metadata, optional; DISABLED without a token
+)
+outcome.classification   # authoritative label, reason codes, assessments
+outcome.evidence         # source records
+outcome.ipinfo_metadata  # supplementary; None unless requested
 ```
 
-### Enable Strict Checks
+Downloads are cached in `data\cache` (ignored by Git).
 
-```cmd
-python scripts\evaluate.py --strict
+### Audit history (optional, off by default)
+
+```powershell
+python scripts\classify_ip.py 8.8.8.8 --audit      # also save this run to data\audit.sqlite3
+python scripts\audit_history.py list               # read the history
+python scripts\audit_history.py purge              # dry run; add --yes to delete runs older than retention
 ```
 
-The default evaluation is an offline, deterministic replay. It uses fixtures rather than making live network requests and does not depend on `.env`, the local data directory, or audit history.
+Enable it for every run with `NETCLASS_AUDIT_ENABLED=true` (`--no-audit` overrides). The file stores
+the IP addresses you classify, never tokens or raw responses. Retention is 90 days by default and is
+applied only when you run `purge --yes`; `NETCLASS_AUDIT_RETENTION_DAYS=0` keeps records indefinitely.
+From Python use `service.classify_and_record(obs)`; `service.classify(obs)` never writes. A failed save
+is reported (`audit.status == "FAILED"`, CLI exit code 5) and never hides the classification.
+Details and privacy notes: `docs/AUDIT_HISTORY.md`.
 
-### Dataset and Accuracy Limitations
+## Source health and live verification
 
-The included `ps010-eval-v1` dataset contains **42 synthetic cases and zero independently sourced reference cases**.
+`python scripts\verify_sources.py --live` is an explicit, capped, redacted live check of the real
+source files (it contacts the internet; the test suite never does). See `docs/SOURCE_HEALTH.md`,
+`docs/LIVE_VERIFICATION.md` and `docs/EVIDENCE_POLICY.md`. Only a healthy source can
+support "confirmed absence"; every other state means absence is not established.
 
-Therefore:
+## Dashboard (local)
 
-- Synthetic policy-conformance results are not real-world accuracy measurements.
-- The dataset does not establish real-world precision, recall, or effectiveness.
-- Evaluation against independently sourced, timestamped reference labels remains outstanding.
-- Live end-to-end verification of the real data sources remains outstanding.
+A presentation layer over the existing `ClassificationService`. It contains no classifier of its
+own and queries no source by itself: every label, reason code and piece of evidence comes from the
+service exactly as the CLI sees it.
 
-Consult `docs/EVALUATION.md` and `docs/STAGE7_VERIFICATION.md` for evaluation methodology, denominators, verification details, and limitations.
+### Launch (Windows PowerShell, from the folder that contains this README)
 
-## 10. Privacy and Responsible Use
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m streamlit run app.py
+```
 
-This project classifies network evidence, not people.
+Then open <http://localhost:8501>. `.streamlit\config.toml` binds the server to `127.0.0.1`,
+disables usage statistics and runs headless (no browser is opened for you). Stop it with Ctrl+C.
+The app starts no lookup and creates no file by itself.
 
-- Optional third-party lookups may disclose the queried IP address to the relevant provider.
-- IPinfo is disabled unless configured and explicitly requested.
-- Audit history is optional and is not written merely because the dashboard is opened.
-- Local audit records may contain IP addresses, observation times, labels, reason codes, and permitted evidence/context fields.
-- Tokens, authorization headers, and raw HTTP response bodies are not intended to be stored in audit records.
-- Audit history is stored locally. The dashboard does not automatically purge or delete it.
-- Missing or conflicting evidence should be interpreted conservatively.
-- An `Unknown` label is not a guarantee of safety or absence of VPN/proxy usage.
+### Classify an IP
 
-Use this prototype as a network-evidence analysis tool, not as the sole basis for consequential security decisions.
+1. Open the **Classify** tab and type an IPv4 or IPv6 address. It is validated locally with the
+   standard-library `ipaddress` module; invalid input is rejected before anything else happens.
+2. Optionally tick RIPEstat and/or IPinfo Lite (IPinfo needs `IPINFO_TOKEN` in `.env`; the token is
+   never displayed). These send the IP address to a third party and are context only.
+3. Press **Classify IP**. Nothing is requested on typing or on a page refresh.
 
-## 11. Documentation
+The result shows the label, reason code, the classifier's own explanation and caveats, the
+classification evidence table (source, status, applicability, retrieval time, errors) and, in
+separate sections titled "Context only - does not determine classification", RIPEstat and IPinfo
+data. Private, loopback, link-local, multicast, reserved, shared and documentation addresses are
+excluded by the existing policy: the page says collection was skipped and no source or context
+service is contacted.
 
-For further details, refer to:
+### Record to the audit history (explicit opt-in)
 
-- `docs/DATA_SOURCES.md` — source attribution and data-source information
-- `docs/INTEGRATION_GUIDE.md` — integration and live-source instructions
-- `docs/RIPESTAT_CONTEXT.md` — RIPEstat context integration
-- `docs/IPINFO_CONTEXT.md` — optional IPinfo metadata
-- `docs/AUDIT_HISTORY.md` — audit storage, retention, and privacy
-- `docs/EVALUATION.md` — evaluation methodology and metrics
-- `docs/STAGE6_VERIFICATION.md` — dashboard verification notes
-- `docs/STAGE7_VERIFICATION.md` — evaluation and release verification
-- `docs/RELEASE_CHANGELOG.md` — release changes
+Audit recording is off by default and the dashboard never writes just because it is open. To record
+one classification, tick **Save this classification to the local audit history**, read the privacy
+notice, tick the acknowledgement, then press **Classify IP**. This calls the existing
+`ClassificationService.classify_and_record`, which uses the `AuditStore` and the path in
+`NETCLASS_DB_PATH`. The opt-in applies to that one classification only; it is not remembered.
+`NETCLASS_AUDIT_ENABLED=true` does not make the dashboard record: the per-classification opt-in is
+still required. "Saved" is shown only after the database transaction committed; if the save fails,
+the classification is still shown together with a warning.
 
-## 12. Project Status and Future Work
+### View the audit history
 
-The repository contains the staged implementation of the classifier, source adapters, supplementary context integrations, optional audit history, local dashboard, and Stage 7 evaluation framework.
+The **Audit history** tab is read-only and opens the database in read-only mode. It never creates
+it: if the file does not exist (or is not a readable audit database) you see an explanation, not an
+empty table. You can filter by label and by exact IP address (both validated, then passed to the
+store as bound parameters), choose 10/25/50/100 rows per page and page forward. Select a run to see
+its recorded evidence and its context metadata, kept in separate tables. The list is newest first
+and re-read on every refresh, not cached.
 
-Documented outstanding work includes:
+### Retention, purge and privacy
 
-- Evaluation against independent, timestamped reference labels
-- Additional live end-to-end verification of the real data sources
-- Further assessment of source coverage and overlap behavior using live inspection results
+The history file stores the IP addresses you classify, observation times, labels, reason codes and
+the evidence/context fields the audit schema allows. It never stores tokens, authorization headers
+or raw HTTP bodies. `NETCLASS_AUDIT_RETENTION_DAYS` (default 90; 0 = keep indefinitely) is shown in
+the Status tab but is applied only by `python scripts\audit_history.py purge --yes`. **The dashboard has no
+purge or delete button** and never purges automatically. The dashboard adds no analytics, telemetry,
+authentication or cloud assumption; it is meant to run on localhost only.
 
-The project's stage-specific change logs and verification reports describe what was implemented and what was actually tested.
+### Limitations
 
-## 13. Team and Project Resources
+* Results reflect available evidence and source coverage only; they say nothing certain about a
+  person's identity or activity. Missing, stale, conflicting or unavailable evidence is never proof
+  of absence.
+* **Unknown** does not mean safe, malicious, or "definitely not a VPN".
+* IPv6 coverage is limited (not every source publishes IPv6 data).
+* RIPEstat and IPinfo are context only and never change a label. A hosting provider/ASN alone never
+  yields a VPN/proxy label.
+* All three evidence sources are current snapshots; they are not proof of historical status. The
+  dashboard always classifies "now".
+* History filters: label and exact IP only (the audit schema supports date filters too, but the
+  dashboard does not expose them). No export, delete or purge in the UI.
+* The status section reports configuration and local files only; it makes no live check.
+* Browser behaviour was verified manually by the project owner on the first dashboard package; see
+  `docs/DASHBOARD_VERIFICATION.md` for exactly what was and was not executed.
 
-- **Team Name:** Viltrumites
-- **Team Code:** `A3-PS010-TC514`
-- **Competition:** AIORI-3 Hackathon
-- **Problem Statement:** PS-010
+## Layout
 
-See `AIORI3_PS010_Viltrumites.pdf` for the project presentation and `VIDEO_LINK.md` for the demonstration link.
+```
+src/netclass/
+  config.py          settings from .env (secrets hidden from repr)
+  address_policy.py  IP validation and exclusion policy
+  hashing.py         SHA-256 and manifest hashing
+  models.py          Pydantic models, labels, reason codes
+  classifier.py      pure deterministic classification rules
+  errors.py          SourceError kinds
+  http_client.py     requests-based fetcher (timeouts, size cap, HTTPS only)
+  parsers.py         strict IP-list / CIDR-list parsers, CidrSet matching
+  cache.py           content-addressed snapshot store
+  snapshots.py       cache-first loading with freshness rules
+  adapters/          tor.py, x4bnet.py, az0.py, base.py
+  collector.py       build adapters, gather evidence, classify (+ optional RIPEstat context)
+  ipinfo.py          optional IPinfo Lite metadata service (metadata only)
+  dashboard/         logic.py (UI-free, tested) and ui.py (Streamlit page)
+  service.py         ClassificationService: classification + optional context; classify_and_record (opt-in audit)
+  audit/             SQLite audit history: store, schema/migrations, privacy scrubbing, retention parsing
+  ripestat.py        RIPEstat context service (metadata only, in-memory TTL cache)
+  evaluation/        dataset.py, metrics.py, report.py (stdlib only); replay.py, runner.py
+  redaction.py       redaction of secrets in logs, errors and reports
+  source_health.py   source-health states and per-file health records
+  live_verify.py     bounded live source verification and report builder
+  live_targets.py    the files live verification probes (built from the adapters)
+  inspection.py      source measurement and overlap report
+  sources.py         source registry: licences, attribution, limits, exclusions
+scripts/             inspect_sources.py, classify_ip.py, ripestat_context.py, ipinfo_context.py, audit_history.py,
+                     evaluate.py, verify_sources.py (live check; opt-in)
+evaluation/          datasets/ps010-eval-v1/ (dataset.json, README.md, PROVENANCE.md); reports/ (release evidence)
+app.py              Streamlit entry point: python -m streamlit run app.py
+.streamlit/          local-only Streamlit config (127.0.0.1, no usage statistics)
+tests/               pytest suite (fakes and stub transport only)
+docs/                DATA_SOURCES.md, INTEGRATION_GUIDE.md, INTEGRATION_AUDIT.md, RELEASE_NOTES.md,
+                     WORKSTREAM_A_AUDIT.md, EVIDENCE_POLICY.md, RIPESTAT_CONTEXT.md, IPINFO_CONTEXT.md,
+                     AUDIT_HISTORY.md, EVALUATION.md, SOURCE_HEALTH.md, LIVE_VERIFICATION.md,
+                     DASHBOARD_VERIFICATION.md, EVALUATION_VERIFICATION.md, SOURCE_HEALTH_VERIFICATION.md
+```
 
----
+## Classification policy (summary)
 
-*Developed by Team Viltrumites for AIORI-3 PS-010, with an emphasis on evidence-based decisions, explainability, reproducibility, and transparent limitations.*
+1. Private, loopback, link-local, multicast, reserved, shared and
+   documentation addresses are excluded: Unknown, `UNKNOWN_EXCLUDED_ADDRESS`.
+   No downloads happen for them.
+2. Evidence must cover the observation time. All three sources are
+   current-only snapshots, so they apply only within a tolerance (default
+   1 hour) of their retrieval time. A current list never supports a
+   historical claim.
+3. A failed, malformed, empty, truncated or stale source is SOURCE_UNAVAILABLE,
+   never a negative match.
+4. Tor evidence together with any VPN evidence is a conflict: Unknown,
+   `UNKNOWN_CONFLICTING_EVIDENCE`. Tor has no precedence.
+5. Datacenter lists, DNS resolver addresses and Apple Private Relay ranges are
+   not VPN evidence. A hosting indicator can never produce a VPN label.
+6. Otherwise Unknown. Reason priority: source unavailable, stale evidence,
+   provider not configured, hosting only, no qualifying match.
+7. RIPEstat and IPinfo are supplementary metadata only. They never create, change or
+   override a label, and a failed lookup never counts as evidence either way.
+
+Details: `docs/INTEGRATION_GUIDE.md` and `docs/DATA_SOURCES.md`.
+
+## Data sources and licences
+
+| Source | Used for | Licence |
+|--------|----------|---------|
+| Tor Project bulk exit list | Tor evidence | none stated at the endpoint |
+| X4BNet/lists_vpn, `output/vpn/` only | VPN evidence (CIDR ranges) | MIT |
+| az0/vpn_ip, `data/input/ip/` | VPN evidence (exact addresses) | GPL-3.0-or-later |
+
+This repository contains no data from these sources. Data is downloaded at
+run time into `data\cache`. Because az0/vpn_ip is GPL licensed, do not commit
+or redistribute its files with this project. Not legal advice.
+
+Credits: Tor Project; X4BNet/lists_vpn (MIT, Copyright (c) 2024 X4B, Mathew
+Heard); az0/vpn_ip (GPL-3.0-or-later, Copyright (C) 2023-2024 Andrew Ziem).
+
+## Open items
+
+- Evaluation against independent, timestamped reference labels (supply the cases; the schema,
+  loader and validator exist).
+- A recorded live verification run of every real source endpoint, including the Tor Project list
+  (`python scripts\verify_sources.py --live`).
+- Further tuning of the Tor/VPN overlap policy needs live `inspect_sources` output.

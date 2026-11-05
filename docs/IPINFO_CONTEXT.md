@@ -1,4 +1,4 @@
-# IPinfo supplementary metadata (Stage 4)
+# IPinfo supplementary metadata
 
 Optional, disabled by default, and **never evidence**. Code: `src/netclass/ipinfo.py`
 (adapter), `src/netclass/service.py` (service layer), `collector.build_ipinfo_service`.
@@ -7,7 +7,7 @@ Optional, disabled by default, and **never evidence**. Code: `src/netclass/ipinf
 
 | | Classification evidence | Supplementary metadata |
 |---|---|---|
-| Sources | Tor exit list, X4BNet `output/vpn`, az0 `data/input/ip` | RIPEstat (Stage 3B), IPinfo Lite (Stage 4) |
+| Sources | Tor exit list, X4BNet `output/vpn`, az0 `data/input/ip` | RIPEstat, IPinfo Lite |
 | Can set the label | Yes (only these) | **No** |
 | Where it appears | `classification`, `evidence` | `ripestat_context`, `ipinfo_metadata` |
 | Failure means | `SOURCE_UNAVAILABLE`, never a negative | explicit `UNAVAILABLE`/`DISABLED`, label untouched |
@@ -20,8 +20,8 @@ touches `ClassificationResult.network_context` (that field belongs to RIPEstat).
 ## 2. Endpoint and fields used
 
 Documentation read on 2026-10-31: <https://ipinfo.io/developers> and
-<https://ipinfo.io/developers/lite-api>. **No live request to IPinfo was made by the Stage 4
-author** (no token was available); behaviour below is verified with mocked HTTP only.
+<https://ipinfo.io/developers/lite-api>. **No live request to IPinfo was made by the
+author of this integration** (no token was available); behaviour below is verified with mocked HTTP only.
 
 * `GET {base}/lite/{ip}`, base default `https://api.ipinfo.io`.
 * Authentication: the documentation lists a `token` query parameter, HTTP Basic and
@@ -31,7 +31,7 @@ author** (no token was available); behaviour below is verified with mocked HTTP 
   integer), `as_name`, `as_domain`, `country_code`, `country`, `continent_code`, `continent`.
   Every other field is ignored, never interpreted.
 * `ip` is required: a response without it, or for another address, is rejected.
-* Not used in Stage 4: the Core/Plus `lookup` endpoint, privacy/hosting/proxy fields, batch API,
+* Not used: the Core/Plus `lookup` endpoint, privacy/hosting/proxy fields, batch API,
   `me`. HTTP statuses other than 429 are mapped generically; their meaning is not taken from IPinfo.
 
 ## 3. Configure, enable, disable

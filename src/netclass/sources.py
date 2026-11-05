@@ -7,7 +7,7 @@ network access.
 
 Facts here were checked on 2026-10-28 by inspecting the repositories. The Tor
 entry could not be downloaded in that session and is based on Tor Project
-documentation; Stage 2 must verify it against a real download.
+documentation; verify it against a real download (scripts/verify_sources.py --live).
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ TOR_SOURCE = SourceSpec(
     description="Tor Project list of IP addresses observed as exit relays.",
     endpoints=("https://check.torproject.org/torbulkexitlist",),
     data_format="Plain text, one IP address per line (per Tor Project documentation; "
-    "to be verified against a real download in Stage 2).",
+    "to be verified against a real download).",
     granularity="exact-address",
     temporal_support="current-only",
     update_process="Maintained by the Tor Project from active measurements. Tor "

@@ -1,4 +1,4 @@
-"""Mocked RIPEstat response builders shared by the Stage 3B tests.
+"""Mocked RIPEstat response builders shared by the RIPEstat tests.
 
 Bodies follow the envelope documented at https://stat.ripe.net/docs/data-api/
 (status, status_code, data_call_name, data_call_status, version, cached,

@@ -1,4 +1,4 @@
-"""SQLite audit history (Stage 5): opt-in, append-only, privacy-conscious.
+"""SQLite audit history: opt-in, append-only, privacy-conscious.
 
 Nothing here is imported by the classification path; see ``store`` for the guarantees.
 """

@@ -1,4 +1,4 @@
-"""Optional IPinfo Lite supplementary-metadata service (Stage 4).
+"""Optional IPinfo Lite supplementary-metadata service.
 
 PURPOSE
     Provide ASN, network-operator name/domain and country/continent METADATA for a
@@ -23,7 +23,7 @@ DOCUMENTED ENDPOINT USED (https://ipinfo.io/developers/lite-api)
         ``as_name``, ``as_domain``, ``country_code``, ``country``,
         ``continent_code``, ``continent``. Every other field is ignored.
     The Core/Plus ``lookup`` endpoint and any privacy, hosting or proxy fields are
-    deliberately NOT used in Stage 4.
+    deliberately NOT used.
 
 FAILURE POLICY
     ``lookup`` never raises. Disabled integration, excluded addresses, timeouts,

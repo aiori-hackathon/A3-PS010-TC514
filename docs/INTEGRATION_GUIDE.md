@@ -1,4 +1,4 @@
-# Integration guide (Stage 2)
+# Integration guide
 
 How live evidence flows through the project, how to run and verify it on
 Windows, and how to extend it.
@@ -22,7 +22,7 @@ Windows, and how to extend it.
  RequestsFetcher.fetch(url)     <- timeout, size cap, HTTPS-only redirects, HTTP 200 only
         |
         v
- classifier.classify()          <- Stage 1 rules (unchanged)
+ classifier.classify()          <- classification rules
 ```
 
 ## 2. How errors become evidence statuses
@@ -169,15 +169,15 @@ Not legal advice.
 
 * Covered by mocked tests (no internet): adapters, parsers, cache, freshness, error mapping,
   overlap and conflict policy. The authoritative test count is whatever `python -m pytest` reports
-  on your machine; earlier stage documents quote counts that Stage 3C could not re-run (see
-  `docs/STAGE3C_AUDIT.md`).
-* Reported by the Stage 2 author, not re-checked in Stage 3C: a live run on 2026-10-30 in which the
+  on your machine; earlier documents quote counts that the integration audit could not re-run (see
+  `docs/INTEGRATION_AUDIT.md`).
+* Reported by an earlier author, not re-checked in the integration audit: a live run on 2026-10-30 in which the
   X4BNet and az0 GitHub endpoints downloaded and parsed.
 * NOT verified live: the Tor Project endpoint (reported unreachable from the earlier sandbox) and the
   RIPEstat endpoints. Format and size are assumed from documentation until you run
   `scripts\inspect_sources.py` and `scripts\ripestat_context.py` on your own machine.
 
-## 12. RIPEstat network context (Stage 3B)
+## 12. RIPEstat network context
 
 Optional and separate from evidence: `collector.classify_with_context(...)` fetches RIPEstat
 ASN/prefix/holder context and passes it to the classifier only as display metadata
@@ -185,7 +185,7 @@ ASN/prefix/holder context and passes it to the classifier only as display metada
 A RIPEstat failure yields an explicit `UNAVAILABLE` context and never affects the label.
 Details, schema, errors, cache and freshness: `docs/RIPESTAT_CONTEXT.md`.
 
-## 13. Service layer and IPinfo metadata (Stage 4)
+## 13. Service layer and IPinfo metadata
 
 ```
  Observation
@@ -206,23 +206,18 @@ Details, schema, errors, cache and freshness: `docs/RIPESTAT_CONTEXT.md`.
   lookups are contained: a failure is an explicit status in `ipinfo_metadata` / `ripestat_context`.
 * **Opt-in.** Nothing is sent to IPinfo unless `include_ipinfo=True` and a usable token exists;
   excluded addresses are never sent. Without a token the status is `DISABLED`.
-* **CLI.** `classify_ip.py` uses the service. Without `--ipinfo` its output is identical to Stage 3C
+* **CLI.** `classify_ip.py` uses the service. Without `--ipinfo` its output is identical to the pre-service-layer script
   (checked by running both versions on the same fake world). `--ipinfo` adds one key,
   `ipinfo_metadata`, and never changes the exit code (0 even if IPinfo fails).
 * **Evidence vs metadata:** `docs/IPINFO_CONTEXT.md` section 1. A VPN-sounding AS name, an ASN or a
   hosting-looking domain from IPinfo still yields the same label as without it.
 
-### Verification status (Stage 4)
+### Verification status (IPinfo and service layer)
 Mocked tests cover the adapter and the service. Not verified: any successful live IPinfo response
 (no token was available), and Windows. Run `python -m pytest -q`, then, with your token,
 `python scripts\ipinfo_context.py 8.8.8.8` and `python scripts\classify_ip.py 8.8.8.8 --ipinfo`.
 
-### Left for Stage 5
-SQLite audit history (store `ServiceResult`, which is frozen and JSON-serialisable, with the
-`ipinfo_metadata` section kept separate from evidence; decide whether queried addresses and
-IPinfo answers may be persisted, since the in-memory caches deliberately write nothing to disk).
-
-## 14. SQLite audit history (Stage 5)
+## 14. SQLite audit history
 
 Opt-in and off by default; full description in `docs/AUDIT_HISTORY.md`.
 

@@ -1,4 +1,4 @@
-# Evaluation framework (Stage 7)
+# Evaluation framework
 
 Purpose: demonstrate the reliability and the limits of the existing PS-010 pipeline in a
 reproducible way. It adds **no classifier, no label and no policy change**. The runner calls

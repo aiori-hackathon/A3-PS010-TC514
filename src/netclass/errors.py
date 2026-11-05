@@ -30,15 +30,25 @@ class SourceError(Exception):
         *,
         url: Optional[str] = None,
         status_code: Optional[int] = None,
+        retryable: bool = False,
+        retry_after: Optional[float] = None,
     ) -> None:
         super().__init__(f"{kind.value}: {message}")
         self.kind = kind
         self.message = message
         self.url = url
         self.status_code = status_code
+        # Set only by the HTTP client, which alone decides what is worth retrying.
+        self.retryable = retryable
+        self.retry_after = retry_after
 
     def with_context(self, extra: str) -> "SourceError":
         """Same error with extra explanation appended (e.g. about a stale cache)."""
         return SourceError(
-            self.kind, f"{self.message}; {extra}", url=self.url, status_code=self.status_code
+            self.kind,
+            f"{self.message}; {extra}",
+            url=self.url,
+            status_code=self.status_code,
+            retryable=self.retryable,
+            retry_after=self.retry_after,
         )

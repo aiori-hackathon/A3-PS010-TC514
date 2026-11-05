@@ -1,4 +1,4 @@
-"""Shared helpers for the Stage 7 evaluation tests (fixtures only; no real data)."""
+"""Shared helpers for the evaluation tests (fixtures only; no real data)."""
 import copy
 import importlib.util
 import json

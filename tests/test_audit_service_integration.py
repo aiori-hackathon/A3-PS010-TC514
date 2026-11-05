@@ -38,7 +38,7 @@ from support import (
 
 EXCLUDED_IP = "10.0.0.1"
 CONFLICT_ROUTES = standard_routes(**{TOR_URL: ip_body([VPN_IP, TOR_IP])})
-# The Stage 4 scenario set (tests/test_service_layer.py): every label and several reason codes.
+# The service-layer scenario set (tests/test_service_layer.py): every label and several reason codes.
 SCENARIOS = [
     (TOR_IP, None),
     (VPN_IP, None),

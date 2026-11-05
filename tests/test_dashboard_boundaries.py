@@ -1,4 +1,4 @@
-"""Stage 6 architectural boundaries, checked on the source (stdlib only: no pydantic, no network).
+"""Dashboard architectural boundaries, checked on the source (stdlib only: no pydantic, no network).
 
 * The dashboard may import the audit package ONLY for read access (and the error type), and may
   call only the store's read methods; it can never write, purge, delete or export.

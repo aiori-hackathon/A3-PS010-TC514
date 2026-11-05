@@ -27,10 +27,13 @@ class Settings:
     ripestat_sourceapp: Optional[str] = None
     # How long a successful RIPEstat response may be reused (in memory only).
     ripestat_cache_ttl_seconds: int = 3600
-    # Optional IPinfo Lite API (Stage 4). Disabled unless IPINFO_TOKEN is set.
+    # Optional IPinfo Lite API. Disabled unless IPINFO_TOKEN is set.
     ipinfo_base_url: str = "https://api.ipinfo.io"
     ipinfo_cache_ttl_seconds: int = 3600
     http_timeout_seconds: float = 10.0
+    # Retries after the first attempt, for the three evidence sources only, and only for
+    # timeouts, connection errors, HTTP 429 and HTTP 5xx. 0 disables; 2 is the maximum.
+    http_max_retries: int = 2
     cache_ttl_seconds: int = 1800
     current_evidence_tolerance_seconds: int = 3600
     max_source_age_seconds: int = 86400
@@ -40,7 +43,7 @@ class Settings:
     # repr=False keeps secrets out of logs
     vpn_provider_api_key: Optional[str] = field(default=None, repr=False)
     ipinfo_token: Optional[str] = field(default=None, repr=False)
-    # SQLite audit history (Stage 5). OFF unless NETCLASS_AUDIT_ENABLED is set (or --audit is
+    # SQLite audit history. OFF unless NETCLASS_AUDIT_ENABLED is set (or --audit is
     # passed). Retention is applied only by the explicit purge command, never automatically;
     # 0 means keep records indefinitely.
     audit_enabled: bool = False
@@ -82,6 +85,19 @@ def _positive_number(env: Mapping[str, str], key: str, default: float) -> float:
         raise ValueError(f"{key} must be a number, got {raw!r}") from exc
     if value <= 0:
         raise ValueError(f"{key} must be greater than zero, got {raw!r}")
+    return value
+
+
+def _retry_count(env: Mapping[str, str], key: str, default: int) -> int:
+    raw = _optional_str(env, key)
+    if raw is None:
+        return default
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise ValueError(f"{key} must be a whole number between 0 and 2, got {raw!r}") from exc
+    if not 0 <= value <= 2:
+        raise ValueError(f"{key} must be between 0 and 2, got {raw!r}")
     return value
 
 
@@ -135,6 +151,7 @@ def load_settings(env: Optional[Mapping[str, str]] = None) -> Settings:
         http_timeout_seconds=_positive_number(
             env, "NETCLASS_HTTP_TIMEOUT_SECONDS", defaults.http_timeout_seconds
         ),
+        http_max_retries=_retry_count(env, "NETCLASS_HTTP_MAX_RETRIES", defaults.http_max_retries),
         cache_ttl_seconds=int(
             _positive_number(env, "NETCLASS_CACHE_TTL_SECONDS", defaults.cache_ttl_seconds)
         ),
